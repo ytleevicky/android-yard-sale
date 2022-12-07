@@ -1,5 +1,6 @@
 package com.vickylee.yardsale
 
+import android.app.AlertDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_logout -> {
-                logout()
+                showAlertBoxForLogout()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -51,6 +52,21 @@ class MainActivity : AppCompatActivity() {
     //endregion
 
     //region Helper functions
+    private fun showAlertBoxForLogout() {
+        val builder = AlertDialog.Builder(this@MainActivity)
+        builder.setMessage("Are you sure you want to logout?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { dialog, id ->
+                logout()
+            }
+            .setNegativeButton("No") { dialog, id ->
+                // Dismiss the dialog
+                dialog.dismiss()
+            }
+        val alert = builder.create()
+        alert.show()
+    }
+
     private fun logout() {
         var rememberUsernameAndPassword = false
         if (intent != null) {
