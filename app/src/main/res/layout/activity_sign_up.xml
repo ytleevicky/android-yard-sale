@@ -8,13 +8,154 @@
     tools:context=".SignUpActivity">
 
     <TextView
+        android:id="@+id/tv_fragment_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sign Up"
+        android:text="Create Account"
         android:textSize="30sp"
         android:textAlignment="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tv_name"
+        android:layout_marginBottom="20dp"
+        />
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Name"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@+id/tv_fragment_title"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/edt_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@+id/tv_name"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/tv_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@+id/edt_name"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/edt_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@+id/tv_email"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/tv_pwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Password"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@+id/edt_email"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/edt_pwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@+id/tv_pwd"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+<!--    <TextView-->
+<!--        android:id="@+id/tv_cnf_pwd"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Confirm Password"-->
+<!--        android:textSize="20sp"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/edt_pwd"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        />-->
+
+<!--    <EditText-->
+<!--        android:id="@+id/edt_cnf_pwd"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textSize="20sp"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tv_cnf_pwd"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        />-->
+
+    <TextView
+        android:id="@+id/tv_user_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Type of account"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@+id/edt_pwd"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <RadioGroup
+        android:id="@+id/rdg_user_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/tv_user_type"
+        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
+        >
+        <RadioButton
+            android:id="@+id/rdb_buyer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Buyer"
+            android:textSize="18sp"
+            android:layout_marginRight="10dp"
+            />
+
+        <RadioButton
+            android:id="@+id/rdb_seller"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Seller"
+            android:textSize="18sp"
+            />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/tv_user_type_error"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="15sp"
+        android:textColor="#ff0000"
+        app:layout_constraintTop_toBottomOf="@+id/rdg_user_type"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <Button
+        android:id="@+id/btn_sign_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@+id/tv_user_type_error"
+        app:layout_constraintStart_toStartOf="parent"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="7dp"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
