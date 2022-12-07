@@ -4,16 +4,16 @@ import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.ActivitySignInBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import java.lang.Runnable
+import java.time.Duration
 
 class SignInActivity : AppCompatActivity() {
 
@@ -69,6 +69,80 @@ class SignInActivity : AppCompatActivity() {
     }
     //endregion
 
+    //region Actions
+    private fun signIn(email: String, password: String) {
+        mAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "SignIn successful")
+
+                    // user's doc id, user name & user role will be saved to sharedPrefs
+                    userRepository.searchUserWithEmail(email)
+
+                    // user's email & password will be saved to sharedPrefs
+                    saveToPrefs(email, password)
+
+                    // Dispaly Loading Dialog on UI
+                    displayLoadingDialog(1500)
+
+                    GlobalScope.async {
+                        delay(1500)
+
+                        // check user type
+                        val prefs =
+                            applicationContext.getSharedPreferences("YARD_SALE_PREFS", MODE_PRIVATE)
+
+                        val currentUserType = prefs.getString("USER_TYPE", "")!!
+                        val currentUserName = prefs.getString("USER_NAME", "")!!
+                        Log.e("TEST", "Current User Type: $currentUserType")
+
+                        if (currentUserType == "Seller") {
+                            goToSellerActivity(currentUserName)
+                        } else {
+                            goToBuyerActivity(currentUserName)
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "SignIn: Failed", task.exception)
+                    Toast.makeText(
+                        this@SignInActivity,
+                        "Authentication Failed. Please try again!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+    }
+
+    suspend fun goToSellerActivity(currentUsername: String) {
+        // Go to Main Activity (Seller)
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("EXTRA_REMEMBER_ME", binding.swtRemember.isChecked)
+        startActivity(intent)
+
+        runOnUiThread {
+            Toast.makeText(
+                this@SignInActivity,
+                "Login Success! Hello $currentUsername!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    suspend fun goToBuyerActivity(currentUsername: String) {
+        // Go to Main Activity (Seller)
+        val intent = Intent(this, MainActivity2::class.java)
+        intent.putExtra("EXTRA_REMEMBER_ME", binding.swtRemember.isChecked)
+        startActivity(intent)
+
+        runOnUiThread {
+            Toast.makeText(
+                this@SignInActivity,
+                "Login Success! Hello $currentUsername!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+    //endregion
 
     //region Helper functions
     private fun validateUserInputData(): Boolean {
@@ -95,47 +169,21 @@ class SignInActivity : AppCompatActivity() {
         return validateDataResult
     }
 
-    private fun signIn(email: String, password: String) {
-
-        mAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "SignIn successful")
-
-                    // user's doc id, user name & user role will be saved to sharedPrefs
-                    userRepository.searchUserWithEmail(email)
-
-                    // user's email & password will be saved to sharedPrefs
-                    saveToPrefs(email, password)
-
-                    // TODO: check user type -> Seller or Buyer
-
-                    // Go to Main Activity
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("EXTRA_REMEMBER_ME", binding.swtRemember.isChecked)
-                    startActivity(intent)
-
-                    Toast.makeText(
-                        this@SignInActivity,
-                        "Login Success! Welcome!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                } else {
-                    Log.e(TAG, "SignIn: Failed", task.exception)
-                    Toast.makeText(
-                        this@SignInActivity,
-                        "Authentication Failed. Please try again!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-    }
-
     private fun saveToPrefs(email: String, password: String) {
         val prefs = applicationContext.getSharedPreferences("YARD_SALE_PREFS", MODE_PRIVATE)
         prefs.edit().putString("USER_EMAIL", email).apply()
         prefs.edit().putString("USER_PASSWORD", password).apply()
+    }
+
+    fun displayLoadingDialog(duration: Long) {
+        val loading = LoadingDialog(this)
+        loading.startLoading()
+        val handler = Handler()
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                loading.isDimiss()
+            }
+        }, duration)
     }
     //endregion
 
