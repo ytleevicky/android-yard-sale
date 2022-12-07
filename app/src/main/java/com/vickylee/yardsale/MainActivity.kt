@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
     }
     //endregion
 
-
     //region Top menu - Logout button
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.top_menu, menu)
@@ -53,13 +52,21 @@ class MainActivity : AppCompatActivity() {
 
     //region Helper functions
     private fun logout() {
+        var rememberUsernameAndPassword = false
+        if (intent != null) {
+            rememberUsernameAndPassword = intent.getBooleanExtra("EXTRA_REMEMBER_ME", false)
+        }
+
         // clear value stored in sharedPrefs
         val prefs = applicationContext.getSharedPreferences("YARD_SALE_PREFS", MODE_PRIVATE)
         prefs.edit().putString("USER_DOC_ID", "").apply()
-        prefs.edit().putString("USER_EMAIL", "").apply()
-        prefs.edit().putString("USER_PASSWORD", "").apply()
         prefs.edit().putString("USER_TYPE", "").apply()
         prefs.edit().putString("USER_NAME", "").apply()
+
+        if (!rememberUsernameAndPassword) {
+            prefs.edit().putString("USER_EMAIL", "").apply()
+            prefs.edit().putString("USER_PASSWORD", "").apply()
+        }
 
         // navigate to sign in screen
         goToSignIn()

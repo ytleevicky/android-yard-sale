@@ -35,6 +35,15 @@ class SignInActivity : AppCompatActivity() {
         // sharedPrefs
         val prefs = applicationContext.getSharedPreferences("YARD_SALE_PREFS", MODE_PRIVATE)
 
+        if (binding.swtRemember.isChecked) {
+            if (prefs.contains("USER_EMAIL")) {
+                binding.etEmail.setText(prefs.getString("USER_EMAIL", ""))
+            }
+            if (prefs.contains("USER_PASSWORD")) {
+                binding.etPassword.setText(prefs.getString("USER_PASSWORD", ""))
+            }
+        }
+
         // fireBase Auth
         mAuth = FirebaseAuth.getInstance()
         userRepository = UserRepository(applicationContext)
@@ -103,6 +112,7 @@ class SignInActivity : AppCompatActivity() {
 
                     // Go to Main Activity
                     val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("EXTRA_REMEMBER_ME", binding.swtRemember.isChecked)
                     startActivity(intent)
 
                     Toast.makeText(

@@ -46,6 +46,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/et_password" />
 
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/swt_remember"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Remember Me"
+        android:checked="true"
+        android:textAlignment="textEnd"
+        app:layout_constraintTop_toBottomOf="@id/btn_sign_in"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
     <Button
         android:id="@+id/btn_sign_up"
         android:layout_width="match_parent"
@@ -56,6 +67,6 @@
         android:textColor="#0000FF"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_sign_in" />
+        app:layout_constraintTop_toBottomOf="@id/swt_remember" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
