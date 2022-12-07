@@ -15,7 +15,7 @@ class SignUpActivity : AppCompatActivity() {
 
     val TAG = this@SignUpActivity.toString()
     private lateinit var binding: ActivitySignUpBinding
-    lateinit var userRepository : UserRepository
+    lateinit var userRepository: UserRepository
     private lateinit var mAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,8 +52,7 @@ class SignUpActivity : AppCompatActivity() {
         if (name.isEmpty()) {
             binding.edtName.error = "Name can not be empty"
             validData = false
-        }
-        else {
+        } else {
             validData = true
         }
 
@@ -61,8 +60,7 @@ class SignUpActivity : AppCompatActivity() {
         if (email.isEmpty()) {
             binding.edtEmail.error = "Email Id can not be empty"
             validData = false
-        }
-        else {
+        } else {
             validData = true
         }
 
@@ -70,14 +68,13 @@ class SignUpActivity : AppCompatActivity() {
         if (password.isEmpty()) {
             binding.edtPwd.error = "Password can not be empty"
             validData = false
-        }
-        else {
+        } else {
             validData = true
         }
 
         // Validate user type
 
-        when(binding.rdgUserType.checkedRadioButtonId) {
+        when (binding.rdgUserType.checkedRadioButtonId) {
             R.id.rdb_buyer -> {
                 binding.tvUserTypeError.setText("")
                 userType = binding.rdbBuyer.text.toString()
@@ -101,27 +98,40 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun signUp(name: String, email: String, password: String, userType: String) {
         mAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) {task ->
+            .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     addUserToDB(name, email, password, userType)
-                    saveToPrefs(email, password, userType)
+                    saveToPrefs(name, email, password, userType)
                     goToMain()
-                }
-                else {
-                    Toast.makeText(this@SignUpActivity, "Failed to sign up", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SignUpActivity,
+                        "Sign up success. Welcome!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(this@SignUpActivity, "Failed to sign up", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
     }
 
-    private fun saveToPrefs(email: String, password: String, userType: String) {
+    private fun saveToPrefs(name: String, email: String, password: String, userType: String) {
         val prefs = applicationContext.getSharedPreferences("YARD_SALE_PREFS", MODE_PRIVATE)
+        prefs.edit().putString("USER_NAME", name).apply()
         prefs.edit().putString("USER_EMAIL", email).apply()
         prefs.edit().putString("USER_PASSWORD", password).apply()
         prefs.edit().putString("USER_TYPE", userType).apply()
     }
 
     private fun addUserToDB(name: String, email: String, password: String, userType: String) {
-        userRepository.addUserToDB(User(name = name, email = email, password = password, userType = userType))
+        userRepository.addUserToDB(
+            User(
+                name = name,
+                email = email,
+                password = password,
+                userType = userType
+            )
+        )
     }
 
     private fun goToMain() {
