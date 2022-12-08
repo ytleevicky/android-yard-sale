@@ -70,4 +70,6 @@ dependencies {
     // Firestore
     implementation 'com.google.firebase:firebase-firestore-ktx'
 
+    //for livedata
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
 }
