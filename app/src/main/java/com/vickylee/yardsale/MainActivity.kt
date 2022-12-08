@@ -84,6 +84,8 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putString("USER_PASSWORD", "").apply()
         }
 
+        //supportFragmentManager.beginTransaction().remove(ListViewFragment).commit()
+
         // navigate to sign in screen
         goToSignIn()
     }
