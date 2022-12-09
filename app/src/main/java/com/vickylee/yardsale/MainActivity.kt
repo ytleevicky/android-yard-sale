@@ -2,19 +2,26 @@ package com.vickylee.yardsale
 
 import android.app.AlertDialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.vickylee.yardsale.databinding.ActivityMainBinding
+
 
 class MainActivity : AppCompatActivity() {
 
     //region Properties
     val TAG = this@MainActivity.toString()
     private lateinit var binding: ActivityMainBinding
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var navController: NavController
     //endregion
 
     //region Android Lifecycle Methods
@@ -31,6 +38,13 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         val navController = navHostFragment.navController
         bottomNavigationView.setupWithNavController(navController)
+
+        // setup back button navigation
+        this.navController = navHostFragment.navController
+        //appBarConfiguration = AppBarConfiguration(navController.graph)
+        appBarConfiguration = AppBarConfiguration(bottomNavigationView.menu)
+
+        setupActionBarWithNavController(navController, appBarConfiguration)
     }
     //endregion
 
@@ -48,6 +62,12 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    //endregion
+
+    //region Add Back button
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
     //endregion
 

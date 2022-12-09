@@ -3,22 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
+    android:label="@string/fragment_profile"
     app:startDestination="@id/listViewFragment">
 
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.vickylee.yardsale.fragments.ProfileFragment"
-        android:label="fragment_profile"
+        android:label="@string/fragment_profile"
         tools:layout="@layout/fragment_profile" />
     <fragment
         android:id="@+id/addItemFragment"
         android:name="com.vickylee.yardsale.fragments.AddItemFragment"
-        android:label="fragment_add_item"
-        tools:layout="@layout/fragment_add_item" />
+        android:label="@string/fragment_add_item"
+        tools:layout="@layout/fragment_add_item" >
+        <action
+            android:id="@+id/action_addItemFragment_to_listViewFragment"
+            app:destination="@id/listViewFragment" />
+    </fragment>
     <fragment
         android:id="@+id/listViewFragment"
         android:name="com.vickylee.yardsale.fragments.ListViewFragment"
-        android:label="fragment_list_view"
-        tools:layout="@layout/fragment_list_view" />
+        android:label="@string/fragment_list_item"
+        tools:layout="@layout/fragment_list_view">
+        <action
+            android:id="@+id/action_listViewFragment_to_addItemFragment"
+            app:destination="@id/addItemFragment" />
+    </fragment>
 
 </navigation>

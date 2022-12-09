@@ -98,6 +98,7 @@ class SignInActivity : AppCompatActivity() {
 
                         if (currentUserType == "Seller") {
                             goToSellerActivity(currentUserName)
+
                         } else {
                             goToBuyerActivity(currentUserName)
                         }

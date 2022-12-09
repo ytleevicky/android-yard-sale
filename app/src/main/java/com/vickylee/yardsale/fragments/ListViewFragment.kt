@@ -6,8 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.adapters.BuyerListAdapter
@@ -15,8 +16,11 @@ import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.OnItemClickListener
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentListViewBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 
-class ListViewFragment : Fragment(R.layout.fragment_list_view), OnItemClickListener {
+class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClickListener {
 
     //region Properties
     val TAG = this.toString()
@@ -50,8 +54,13 @@ class ListViewFragment : Fragment(R.layout.fragment_list_view), OnItemClickListe
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         Log.d(TAG, "TEST - onViewCreated() is executing")
+
+        binding.floatingActionButton.setOnClickListener {
+            // navigate to AddItemFragment
+            val action = ListViewFragmentDirections.actionListViewFragmentToAddItemFragment()
+            findNavController().navigate(action)
+        }
     }
 
     override fun onStart() {
@@ -59,8 +68,6 @@ class ListViewFragment : Fragment(R.layout.fragment_list_view), OnItemClickListe
         Log.d(TAG, "TEST - onStart() is executing")
         itemArrayList = ArrayList()
         userRepository.getAllItemsInSellerAccount()
-
-        Log.d(TAG, "onStart: itemArrayList $itemArrayList")
 
         // recycler view
         itemAdapter = BuyerListAdapter(this.requireContext(), itemArrayList, this)
@@ -70,31 +77,26 @@ class ListViewFragment : Fragment(R.layout.fragment_list_view), OnItemClickListe
 
     override fun onResume() {
         super.onResume()
-
         Log.d(TAG, "onResume() is executing now... ")
         userRepository.getAllItemsInSellerAccount()
-        itemArrayList.clear()
 
         userRepository.allItemsInUserAccount.observe(this, Observer { itemList ->
             Log.d(TAG, "onResume: Size - ${itemList.size}")
+            itemArrayList.clear()
 
             if (itemList != null) {
                 for (item in itemList) {
                     itemArrayList.add(Item(itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
                     Log.d(TAG, "onResume: $item")
+                    itemAdapter?.notifyDataSetChanged()
                 }
             }
         })
-
-        Log.d(TAG, "TEST Array list size ${itemArrayList.size}")
-
-        itemAdapter?.notifyDataSetChanged()
     }
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause() is executing now... ")
-        itemArrayList.clear()
     }
 
     override fun onDestroyView() {
@@ -106,4 +108,5 @@ class ListViewFragment : Fragment(R.layout.fragment_list_view), OnItemClickListe
         Toast.makeText(context, "${item.itemName} selected", Toast.LENGTH_SHORT).show()
     }
     //endregion
+
 }
