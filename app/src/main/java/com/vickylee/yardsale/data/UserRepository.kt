@@ -165,8 +165,6 @@ class UserRepository(private val context: Context) {
                             val currentItem: Item =
                                 documentChange.document.toObject(Item::class.java)
 
-                            Log.d("VICKY", "CURRENT ITEM: $currentItem")
-
                             when (documentChange.type) {
                                 DocumentChange.Type.ADDED -> {
                                     itemsArrayList.add(currentItem)
@@ -193,5 +191,4 @@ class UserRepository(private val context: Context) {
         }
     }
     //endregion
-
 }

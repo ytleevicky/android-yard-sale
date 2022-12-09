@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.UserRepository
@@ -49,21 +51,35 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         binding.btnAddItem.setOnClickListener {
             Log.d(TAG, "AddItemFragment - Add button is pressed")
 
-            if(validateUserInputData()) {
+            if (validateUserInputData()) {
                 val itemName = binding.edtItemName.text.toString()
                 val itemDescription = binding.edtItemDescription.text.toString()
                 val itemPrice = binding.edtItemPrice.text.toString().toDouble()
 
-                val newItem = Item(itemName = itemName , itemDescription = itemDescription, itemPrice = itemPrice)
+                val newItem = Item(
+                    itemName = itemName,
+                    itemDescription = itemDescription,
+                    itemPrice = itemPrice
+                )
                 userRepository.addItemToUserAccount(newItem)
 
-                Toast.makeText(context, "New item has been added to the list", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "New item has been added to the list", Toast.LENGTH_SHORT)
+                    .show()
                 resetInputField()
+
+                // navigate to AddItemFragment
+                val action = AddItemFragmentDirections.actionAddItemFragmentToListViewFragment()
+                findNavController().navigate(action)
 
             } else {
                 Toast.makeText(context, "Please provide correct inputs", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "AddItemFragment: onPause() is executing now... ")
     }
 
     override fun onDestroyView() {
@@ -80,7 +96,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         var itemPrice = ""
 
         // item name
-        if(binding.edtItemName.text.toString().isNullOrEmpty()) {
+        if (binding.edtItemName.text.toString().isNullOrEmpty()) {
             Log.d(TAG, "pressed. edt item name is empty")
             binding.edtItemName.error = "Item name cannot be empty"
             validateDataResult = false
@@ -89,7 +105,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         }
 
         // item Description
-        if(binding.edtItemDescription.text.toString().isEmpty()) {
+        if (binding.edtItemDescription.text.toString().isEmpty()) {
             binding.edtItemDescription.error = "Item description cannot be empty"
             validateDataResult = false
         } else {
@@ -97,7 +113,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         }
 
         // item Price
-        if(binding.edtItemPrice.text.toString().isEmpty()) {
+        if (binding.edtItemPrice.text.toString().isEmpty()) {
             binding.edtItemPrice.error = "Item price cannot be empty"
             validateDataResult = false
         } else {

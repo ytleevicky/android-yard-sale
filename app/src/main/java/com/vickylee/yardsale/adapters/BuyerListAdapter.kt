@@ -1,6 +1,7 @@
 package com.vickylee.yardsale.adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +35,7 @@ class BuyerListAdapter(
             }
 
             itemView.setOnClickListener {
+
                 clickListener.onItemClicked(currentItem)
             }
         }

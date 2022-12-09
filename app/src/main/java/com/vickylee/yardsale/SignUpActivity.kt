@@ -102,12 +102,13 @@ class SignUpActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     addUserToDB(name, email, password, userType)
                     saveToPrefs(name, email, password, userType)
-                    goToMain()
-                    Toast.makeText(
-                        this@SignUpActivity,
-                        "Sign up success. Welcome!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                    if (userType == "Seller") {
+                        goToSellerActivity(name)
+                    } else {
+                        goToBuyerActivity(name)
+                    }
+
                 } else {
                     Toast.makeText(this@SignUpActivity, "Failed to sign up", Toast.LENGTH_SHORT)
                         .show()
@@ -134,9 +135,27 @@ class SignUpActivity : AppCompatActivity() {
         )
     }
 
-    private fun goToMain() {
-        val mainIntent = Intent(this, MainActivity::class.java)
-        startActivity(mainIntent)
+    private fun goToSellerActivity(currentUsername: String) {
+        // Go to Main Activity (Seller)
+        val sellerIntent = Intent(this, MainActivity::class.java)
+        startActivity(sellerIntent)
+
+        Toast.makeText(
+            this@SignUpActivity,
+            "Sign up Success! Hello $currentUsername!",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun goToBuyerActivity(currentUsername: String) {
+        val buyerIntent = Intent(this, MainActivity2::class.java)
+        startActivity(buyerIntent)
         finish()
+
+        Toast.makeText(
+            this@SignUpActivity,
+            "Sign up Success! Hello $currentUsername!",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }
