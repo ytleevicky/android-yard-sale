@@ -4,6 +4,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.view.View
 import android.widget.Toast
 import com.google.android.material.tabs.TabLayout.TabGravity
 import com.google.firebase.auth.FirebaseAuth
@@ -30,10 +32,14 @@ class SignUpActivity : AppCompatActivity() {
 
         binding.rdbBuyer.setOnClickListener {
             userType = binding.rdbBuyer.text.toString()
+            binding.tvUserAddress.visibility = View.GONE
+            binding.edtUserAddress.visibility = View.GONE
         }
 
         binding.rdbSeller.setOnClickListener {
             userType = binding.rdbSeller.text.toString()
+            binding.tvUserAddress.visibility = View.VISIBLE
+            binding.edtUserAddress.visibility = View.VISIBLE
         }
 
         binding.btnSignUp.setOnClickListener {
@@ -46,6 +52,8 @@ class SignUpActivity : AppCompatActivity() {
         val name = binding.edtName.text.toString()
         val email = binding.edtEmail.text.toString()
         val password = binding.edtPwd.text.toString()
+        val phone = binding.edtPhone.text.toString()
+        val address = binding.edtUserAddress.text.toString()
         var userType = ""
 
         // Validate name
@@ -78,11 +86,13 @@ class SignUpActivity : AppCompatActivity() {
             R.id.rdb_buyer -> {
                 binding.tvUserTypeError.setText("")
                 userType = binding.rdbBuyer.text.toString()
+
                 validData = true
             }
             R.id.rdb_seller -> {
                 binding.tvUserTypeError.setText("")
                 userType = binding.rdbSeller.text.toString()
+
                 validData = true
             }
             else -> {
@@ -92,15 +102,15 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         if (validData) {
-            signUp(name, email, password, userType)
+            signUp(name, email, password, phone, address, userType)
         }
     }
 
-    private fun signUp(name: String, email: String, password: String, userType: String) {
+    private fun signUp(name: String, email: String, password: String, phone: String, address : String, userType: String) {
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    addUserToDB(name, email, password, userType)
+                    addUserToDB(name, email, password, phone, address, userType)
                     saveToPrefs(name, email, password, userType)
 
                     if (userType == "Seller") {
@@ -124,11 +134,13 @@ class SignUpActivity : AppCompatActivity() {
         prefs.edit().putString("USER_TYPE", userType).apply()
     }
 
-    private fun addUserToDB(name: String, email: String, password: String, userType: String) {
+    private fun addUserToDB(name: String, email: String, password: String, phone: String, address : String, userType: String) {
         userRepository.addUserToDB(
             User(
                 name = name,
                 email = email,
+                phone = phone,
+                address = address,
                 password = password,
                 userType = userType
             )

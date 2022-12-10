@@ -11,6 +11,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.HashMap
+import kotlin.math.log
 
 class UserRepository(private val context: Context) {
     //region Properties
@@ -19,7 +20,9 @@ class UserRepository(private val context: Context) {
     private val COLLECTION_NAME = "users"
     private val FIELD_USER_NAME = "name"
     private val FIELD_USER_EMAIL = "email"
-    private val FIELD_PASSWORD = "password"
+    private val FIELD_USER_PHONE = "phone"
+    private val FIELD_USER_ADDRESS = "address"
+    private val FIELD_USER_PASSWORD = "password"
     private val FIELD_USER_TYPE = "userType"
 
     private val SUB_COLLECTION_NAME = "items"
@@ -29,6 +32,9 @@ class UserRepository(private val context: Context) {
     private val FIELD_ITEM_IS_AVAILABLE = "isItemAvailable"
     private val FIELD_ITEM_CREATION_TIME = "creation_time_ms"
 
+    private lateinit var currentUser: User
+
+    var user: MutableLiveData<User?> = MutableLiveData<User?>()
     var allItemsInUserAccount: MutableLiveData<List<Item>> = MutableLiveData<List<Item>>()
 
     private val sharedPreference =
@@ -43,7 +49,9 @@ class UserRepository(private val context: Context) {
 
             data[FIELD_USER_NAME] = newUser.name
             data[FIELD_USER_EMAIL] = newUser.email
-            data[FIELD_PASSWORD] = newUser.password
+            data[FIELD_USER_PASSWORD] = newUser.password
+            data[FIELD_USER_PHONE] = newUser.phone
+            data[FIELD_USER_ADDRESS] = newUser.address
             data[FIELD_USER_TYPE] = newUser.userType
 
             db.collection(COLLECTION_NAME).add(data).addOnSuccessListener { docRef ->
@@ -191,4 +199,44 @@ class UserRepository(private val context: Context) {
         }
     }
     //endregion
+
+    // Get user details for profile
+    fun getUserDetailsFromDB(userID: String) {
+        try {
+
+            val docRef = db.collection(COLLECTION_NAME).document(userID)
+//            val currentUser: User = docRef.toObject
+//            docRef?.get()?.addOnSuccessListener {
+//                Log.d(TAG, "getUserDetailsFromDB: ${it.data}")
+//                user.postValue(it.data.toObject)
+//
+//            }?.addOnFailureListener {
+//                Log.e(TAG, "addUserToDB: $it")
+//            }
+
+            docRef.addSnapshotListener(EventListener { snapshot, error ->
+                if (error != null) {
+                    Log.e(TAG, "getUserDetailsFromDB: Listening to collect documents FAILED $error")
+                    return@EventListener
+                }
+
+                if (snapshot != null) {
+                    val currentUser: User = snapshot.toObject(User::class.java)!!
+                    if (currentUser != null) {
+                        currentUser.id = snapshot.id
+                        currentUser.email = snapshot.get(FIELD_USER_EMAIL).toString()
+                        currentUser.name = snapshot.get(FIELD_USER_NAME).toString()
+                        currentUser.phone = snapshot.get(FIELD_USER_PHONE).toString()
+                        currentUser.password = snapshot.get(FIELD_USER_PASSWORD).toString()
+                    }
+                    user.postValue(currentUser)
+                }
+
+            })
+        }
+        catch (ex:Exception) {
+            Log.e(TAG, "getUserDetailsFromDB: Couldn't find user", )
+        }
+
+    }
 }
