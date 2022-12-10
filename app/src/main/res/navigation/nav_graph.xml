@@ -37,16 +37,15 @@
             app:destination="@id/addItemFragment" />
     </fragment>
     <fragment
-<<<<<<< HEAD
         android:id="@+id/cameraPreviewFragment"
         android:name="com.vickylee.yardsale.fragments.CameraPreviewFragment"
         android:label="fragment_camera_preview"
         tools:layout="@layout/fragment_camera_preview" />
-=======
+
+    <fragment
         android:id="@+id/editProfileFragment"
         android:name="com.vickylee.yardsale.fragments.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
->>>>>>> 4e4f197 (Added Profile Page)
 
 </navigation>
