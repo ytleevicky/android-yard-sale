@@ -1,5 +1,8 @@
 package com.vickylee.yardsale.fragments
 
+import android.Manifest
+import android.app.AlertDialog
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,12 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentAddItemBinding
+import java.lang.Exception
 
 class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
@@ -21,6 +31,15 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
     private var _binding: FragmentAddItemBinding? = null
     private val binding get() = _binding!!
     lateinit var userRepository: UserRepository
+
+    // Permission
+    // request code
+    private val REQUEST_PERMISSION_CODE = 1234
+
+    // List of permissions that app requires
+    private val REQUIRED_PERMISSIONS_LIST =
+        arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
     //endregion
 
     //region Lifecycle Methods
@@ -73,6 +92,26 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
             } else {
                 Toast.makeText(context, "Please provide correct inputs", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.imgBtnCamera.setOnClickListener {
+            // permission
+            if (allPermissionsGranted() == true) {
+                Log.d(TAG, "onViewCreated:  Application has required permission, continuing...")
+                // If the user has provided all permissions, then start the camera preview
+
+                // Navigate to Camera Preview Fragment
+                val action =
+                    AddItemFragmentDirections.actionAddItemFragmentToCameraPreviewFragment()
+                findNavController().navigate(action)
+            } else {
+                // TODO: Otherwise, request permissions
+                requestPermissions(
+                    REQUIRED_PERMISSIONS_LIST,
+                    REQUEST_PERMISSION_CODE
+                )
+                showAlertBoxToEducateUser()
             }
         }
     }
@@ -130,4 +169,42 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
     }
     //endregion
 
+    //region Helper function - Permission
+    fun allPermissionsGranted(): Boolean {
+        if (hasCameraPermission() == true && hasExternalStoragePermission() == true) {
+            Log.d(TAG, "checkPermissions: User granted all required permissions")
+            return true
+        } else {
+            Log.d(TAG, "checkPermissions: User is missing some or all of the required permissions")
+            return false
+        }
+    }
+
+    private fun hasCameraPermission(): Boolean {
+        // returns true of the Camera permission is granted, and false otherwise
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun hasExternalStoragePermission(): Boolean {
+        // returns true of the External storage permission is granted, and false otherwise
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun showAlertBoxToEducateUser() {
+        val builder = AlertDialog.Builder(context)
+        builder.setMessage("To take picture, please go to app setting and allow this app to use your camera.")
+            .setCancelable(false)
+            .setPositiveButton("OK") { dialog, id ->
+            }
+
+        val alert = builder.create()
+        alert.show()
+    }
+    //endregion
 }
