@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_addItemFragment_to_listViewFragment"
             app:destination="@id/listViewFragment" />
+        <action
+            android:id="@+id/action_addItemFragment_to_cameraPreviewFragment"
+            app:destination="@id/cameraPreviewFragment" />
     </fragment>
     <fragment
         android:id="@+id/listViewFragment"
@@ -29,5 +32,10 @@
             android:id="@+id/action_listViewFragment_to_addItemFragment"
             app:destination="@id/addItemFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/cameraPreviewFragment"
+        android:name="com.vickylee.yardsale.fragments.CameraPreviewFragment"
+        android:label="fragment_camera_preview"
+        tools:layout="@layout/fragment_camera_preview" />
 
 </navigation>

@@ -3,4 +3,6 @@
     <string name="fragment_list_item">Marketplace</string>
     <string name="fragment_add_item">Add Item</string>
     <string name="fragment_profile">Profile</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
