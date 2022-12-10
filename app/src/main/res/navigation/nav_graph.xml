@@ -36,6 +36,7 @@
             android:id="@+id/action_listViewFragment_to_addItemFragment"
             app:destination="@id/addItemFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/cameraPreviewFragment"
         android:name="com.vickylee.yardsale.fragments.CameraPreviewFragment"
@@ -46,6 +47,10 @@
         android:id="@+id/editProfileFragment"
         android:name="com.vickylee.yardsale.fragments.EditProfileFragment"
         android:label="Edit Profile"
-        tools:layout="@layout/fragment_edit_profile" />
+        tools:layout="@layout/fragment_edit_profile" >
+        <action
+            android:id="@+id/action_editProfileFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
 
 </navigation>

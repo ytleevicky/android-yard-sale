@@ -18,15 +18,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:textSize="20sp"
-        android:layout_marginTop="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
 
     <EditText
         android:id="@+id/edt_name"
@@ -34,19 +25,12 @@
         android:layout_height="wrap_content"
         android:inputType="text"
         android:textSize="20sp"
-        android:layout_marginTop="5dp"
+        android:hint="Name"
+        android:layout_marginTop="15dp"
+        android:enabled="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_name" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
 
-    <TextView
-        android:id="@+id/tv_email"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Email"
-        android:textSize="20sp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_name" />
 
     <EditText
         android:id="@+id/edt_email"
@@ -54,19 +38,12 @@
         android:layout_height="wrap_content"
         android:inputType="text"
         android:textSize="20sp"
-        android:layout_marginTop="5dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_email" />
-
-    <TextView
-        android:id="@+id/tv_phone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Phone"
-        android:textSize="20sp"
+        android:hint="Email"
+        android:enabled="false"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_email" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_name" />
+
 
     <EditText
         android:id="@+id/edt_phone"
@@ -74,19 +51,11 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         android:textSize="20sp"
-        android:layout_marginTop="5dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_phone" />
-
-    <TextView
-        android:id="@+id/tv_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Address"
-        android:textSize="20sp"
+        android:hint="Phone Number"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_phone" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_email" />
+
 
     <EditText
         android:id="@+id/edt_location"
@@ -94,9 +63,11 @@
         android:layout_height="wrap_content"
         android:inputType="text"
         android:textSize="20sp"
-        android:layout_marginTop="5dp"
+        android:hint="Address"
+        android:visibility="gone"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_location" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_phone" />
 
     <Button
         android:id="@+id/btn_save"
