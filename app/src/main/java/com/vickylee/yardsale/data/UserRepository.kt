@@ -173,6 +173,8 @@ class UserRepository(private val context: Context) {
                             val currentItem: Item =
                                 documentChange.document.toObject(Item::class.java)
 
+                            currentItem.itemID = documentChange.document.id
+//
                             when (documentChange.type) {
                                 DocumentChange.Type.ADDED -> {
                                     itemsArrayList.add(currentItem)
@@ -205,14 +207,6 @@ class UserRepository(private val context: Context) {
         try {
 
             val docRef = db.collection(COLLECTION_NAME).document(userID)
-//            val currentUser: User = docRef.toObject
-//            docRef?.get()?.addOnSuccessListener {
-//                Log.d(TAG, "getUserDetailsFromDB: ${it.data}")
-//                user.postValue(it.data.toObject)
-//
-//            }?.addOnFailureListener {
-//                Log.e(TAG, "addUserToDB: $it")
-//            }
 
             docRef.addSnapshotListener(EventListener { snapshot, error ->
                 if (error != null) {
@@ -238,5 +232,55 @@ class UserRepository(private val context: Context) {
             Log.e(TAG, "getUserDetailsFromDB: Couldn't find user", )
         }
 
+    }
+
+    fun updateUserDetails(userID: String, phone: String, address: String) {
+        try{
+            db.collection(COLLECTION_NAME).document(userID)
+                .update( FIELD_USER_PHONE, phone, FIELD_USER_ADDRESS, address)
+                .addOnSuccessListener {
+                    Log.d(TAG, "updateUserDetails: Updated successfully")
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                }
+        }
+        catch (ex: Exception) {
+            Log.e(TAG, "updateUserDetails: Update failed", )
+        }
+    }
+
+    fun changePassword(userID: String, newPassword: String) {
+        try{
+            db.collection(COLLECTION_NAME).document(userID)
+                .update(FIELD_USER_PASSWORD, newPassword)
+                .addOnSuccessListener {
+                    Log.d(TAG, "updateUserDetails: Updated successfully")
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                }
+        }
+        catch (ex: Exception) {
+            Log.e(TAG, "updateUserDetails: Update failed", )
+        }
+    }
+
+    fun deleteItem(userID: String, itemID: String) {
+        try{
+            db.collection(COLLECTION_NAME).document(userID)
+                .collection(SUB_COLLECTION_NAME)
+                .document(itemID)
+                .delete()
+                .addOnSuccessListener {
+                    Log.d(TAG, "deleteItem: deleted successfully")
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "deleteItem: delete Failed", )
+                }
+        }
+        catch (ex: Exception) {
+            Log.e(TAG, "deleteItem: delete failed", )
+        }
     }
 }

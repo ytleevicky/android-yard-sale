@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.vickylee.yardsale.data.UserRepository
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.vickylee.yardsale.databinding.FragmentEditProfileBinding
 
 
@@ -43,9 +44,25 @@ class EditProfileFragment : Fragment() {
         if (userID != null) {
             getUserDetailsFromDB(userID)
         }
+
+        binding.btnSave.setOnClickListener {
+            val phone = binding.edtPhone.text.toString()
+            val address = binding.edtLocation.text.toString()
+            if (userID != null) {
+                updateUserDetailsInDB(userID, phone, address)
+            }
+            val action = EditProfileFragmentDirections.actionEditProfileFragmentToProfileFragment()
+            findNavController().navigate(action)
+        }
+
+    }
+
+    private fun updateUserDetailsInDB(userID: String, phone: String, address: String) {
+        userRepository.updateUserDetails(userID, phone, address)
     }
 
     private fun getUserDetailsFromDB(userID: String) {
+        val userType = prefs.getString("USER_TYPE", "")
         userRepository.getUserDetailsFromDB(userID)
         userRepository.user.observe(viewLifecycleOwner, Observer {
             if (it != null) {
@@ -53,7 +70,11 @@ class EditProfileFragment : Fragment() {
                 binding.edtName.setText(it.name)
                 binding.edtEmail.setText(it.email)
                 binding.edtPhone.setText(it.phone)
-                binding.edtLocation.setText(it.address)
+                if (userType == "Seller") {
+                    binding.edtLocation.visibility = View.VISIBLE
+                    binding.edtLocation.setText(it.address)
+                }
+
             }
         })
     }

@@ -1,15 +1,21 @@
 package com.vickylee.yardsale.fragments
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.adapters.BuyerListAdapter
 import com.vickylee.yardsale.data.Item
@@ -19,6 +25,7 @@ import com.vickylee.yardsale.databinding.FragmentListViewBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClickListener {
 
@@ -26,6 +33,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     val TAG = this.toString()
     private var _binding: FragmentListViewBinding? = null
     private val binding get() = _binding!!
+    private lateinit var prefs: SharedPreferences
     lateinit var userRepository: UserRepository
     lateinit var itemArrayList: ArrayList<Item>
     var itemAdapter: BuyerListAdapter? = null
@@ -35,8 +43,13 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "TEST - onCreate() is executing")
-
+        prefs = requireContext().getSharedPreferences("YARD_SALE_PREFS",
+            AppCompatActivity.MODE_PRIVATE
+        )
         userRepository = UserRepository((requireContext()))
+
+
+
     }
 
     override fun onCreateView(
@@ -55,12 +68,36 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "TEST - onViewCreated() is executing")
-
+        var userID = prefs.getString("USER_DOC_ID", "NA")
         binding.floatingActionButton.setOnClickListener {
             // navigate to AddItemFragment
             val action = ListViewFragmentDirections.actionListViewFragmentToAddItemFragment()
             findNavController().navigate(action)
         }
+
+        val simpleCallback: ItemTouchHelper.SimpleCallback =
+            object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    if (direction == ItemTouchHelper.LEFT) {
+                        //delete the current item from DB
+                        Log.d(TAG,"onSwiped: trying to delete item : " + viewHolder.adapterPosition)
+                        if (userID != null) {
+                            deleteItem(userID, viewHolder.adapterPosition)
+                        }
+                    }
+                }
+            }
+
+        val helper = ItemTouchHelper(simpleCallback)
+        helper.attachToRecyclerView(binding.rvItems)
     }
 
     override fun onStart() {
@@ -106,6 +143,29 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
     override fun onItemClicked(item: Item) {
         Toast.makeText(context, "${item.itemName} selected", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun deleteItem(userId: String, position: Int) {
+        Log.d(TAG, "deleteItem: Trying to delete item at position $position")
+
+        //ask for confirmation
+        val confirmDialog = AlertDialog.Builder(requireContext())
+        confirmDialog.setTitle("Delete")
+        confirmDialog.setMessage("Are you sure you want to delete this item?")
+        confirmDialog.setNegativeButton("Cancel") { dialogInterface, i ->
+            itemAdapter?.notifyDataSetChanged()
+            dialogInterface.dismiss()
+        }
+        confirmDialog.setPositiveButton("Yes") { dialogInterface, i ->
+            Log.d(TAG, "deleteItem: ${userRepository.allItemsInUserAccount.value!!.get(position).itemID}")
+            //delete from database
+            lifecycleScope.launch {
+                userRepository.deleteItem(userId, userRepository.allItemsInUserAccount.value!!.get(position).itemID)
+                itemArrayList!!.removeAt(position)
+                itemAdapter?.notifyDataSetChanged()
+            }
+        }
+        confirmDialog.show()
     }
     //endregion
 

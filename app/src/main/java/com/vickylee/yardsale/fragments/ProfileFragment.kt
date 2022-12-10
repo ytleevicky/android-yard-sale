@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.vickylee.yardsale.R
@@ -53,6 +55,43 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             val action = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
             findNavController().navigate(action)
         }
+
+        binding.tvChangePassword.setOnClickListener {
+            if (userID != null) {
+                changePassword(userID)
+            }
+        }
+    }
+
+    private fun changePassword(userID: String) {
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.change_password, null)
+        var currentPassword = dialogView.findViewById<EditText>(R.id.edt_cur_pwd)
+        userRepository.getUserDetailsFromDB(userID)
+        userRepository.user.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
+                currentPassword.setText(it.password)
+            }
+        })
+        val editDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Change Password")
+            .setView(dialogView)
+            .setPositiveButton("Update") { dialog, which ->
+                val newPassword = dialogView.findViewById<EditText>(R.id.edt_new_pwd)
+                val confirmPassword = dialogView.findViewById<EditText>(R.id.edt_cnf_pwd)
+
+                if (newPassword.text.toString() == confirmPassword.text.toString()) {
+                    Log.d("TAG", "changePassword: Password matched")
+                    userRepository.changePassword(userID, newPassword.text.toString())
+                }
+                else {
+                    confirmPassword.setError("Password didn't match with new password")
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+        editDialog.show()
     }
 
     private fun getUserDetailsFromDB(userID: String) {
