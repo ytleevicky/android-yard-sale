@@ -3,31 +3,27 @@ package com.vickylee.yardsale.fragments
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.UserRepository
-import com.vickylee.yardsale.databinding.FragmentProfileBinding
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
+import com.vickylee.yardsale.databinding.FragmentEditProfileBinding
 
-class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
-    val TAG = this@ProfileFragment
-    private var _binding: FragmentProfileBinding? = null
+class EditProfileFragment : Fragment() {
+
+    val TAG = this@EditProfileFragment
+    private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
     private lateinit var prefs: SharedPreferences
     private lateinit var userRepository : UserRepository
-
-    //region Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         userRepository = UserRepository(requireContext())
     }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,7 +32,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         prefs = requireContext().getSharedPreferences("YARD_SALE_PREFS",
             AppCompatActivity.MODE_PRIVATE
         )
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -47,12 +43,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         if (userID != null) {
             getUserDetailsFromDB(userID)
         }
-
-        binding.btnEditProfile.setOnClickListener {
-            // navigate to edit profile fragment
-            val action = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
-            findNavController().navigate(action)
-        }
     }
 
     private fun getUserDetailsFromDB(userID: String) {
@@ -60,21 +50,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         userRepository.user.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
-                binding.tvName.text = it.name
-                binding.tvEmail.text = it.email
-                binding.tvPhone.text = it.phone
-                binding.tvLocation.text = it.address
+                binding.edtName.setText(it.name)
+                binding.edtEmail.setText(it.email)
+                binding.edtPhone.setText(it.phone)
+                binding.edtLocation.setText(it.address)
             }
         })
-    }
-
-    override fun onStart() {
-        super.onStart()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-    //endregion
 }

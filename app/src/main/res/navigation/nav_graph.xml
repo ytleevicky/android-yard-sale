@@ -10,7 +10,11 @@
         android:id="@+id/profileFragment"
         android:name="com.vickylee.yardsale.fragments.ProfileFragment"
         android:label="@string/fragment_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+    </fragment>
     <fragment
         android:id="@+id/addItemFragment"
         android:name="com.vickylee.yardsale.fragments.AddItemFragment"
@@ -33,9 +37,16 @@
             app:destination="@id/addItemFragment" />
     </fragment>
     <fragment
+<<<<<<< HEAD
         android:id="@+id/cameraPreviewFragment"
         android:name="com.vickylee.yardsale.fragments.CameraPreviewFragment"
         android:label="fragment_camera_preview"
         tools:layout="@layout/fragment_camera_preview" />
+=======
+        android:id="@+id/editProfileFragment"
+        android:name="com.vickylee.yardsale.fragments.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
+>>>>>>> 4e4f197 (Added Profile Page)
 
 </navigation>
