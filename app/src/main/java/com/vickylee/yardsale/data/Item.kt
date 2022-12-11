@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import java.util.*
 
 data class Item(
+    var sellerID: String = "",
     var itemID: String = UUID.randomUUID().toString(),
     var itemName: String = "",
     var itemDescription: String = "",
