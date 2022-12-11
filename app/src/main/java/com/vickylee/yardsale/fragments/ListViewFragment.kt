@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,6 +37,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     private lateinit var prefs: SharedPreferences
     lateinit var userRepository: UserRepository
     lateinit var itemArrayList: ArrayList<Item>
+    lateinit var userType: String
     var itemAdapter: BuyerListAdapter? = null
     //endregion
 
@@ -47,9 +49,6 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
             AppCompatActivity.MODE_PRIVATE
         )
         userRepository = UserRepository((requireContext()))
-
-
-
     }
 
     override fun onCreateView(
@@ -69,42 +68,55 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "TEST - onViewCreated() is executing")
         var userID = prefs.getString("USER_DOC_ID", "NA")
-        binding.floatingActionButton.setOnClickListener {
-            // navigate to AddItemFragment
-            val action = ListViewFragmentDirections.actionListViewFragmentToAddItemFragment()
-            findNavController().navigate(action)
-        }
+        userType = prefs.getString("USER_TYPE", "NA").toString()
+        if (userType == "Seller") {
+            binding.floatingActionButton.visibility = View.VISIBLE
+            binding.floatingActionButton.setOnClickListener {
+                // navigate to AddItemFragment
+                val action = ListViewFragmentDirections.actionListViewFragmentToAddItemFragment()
+                findNavController().navigate(action)
+            }
+            val simpleCallback: ItemTouchHelper.SimpleCallback =
+                object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+                    override fun onMove(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder,
+                        target: RecyclerView.ViewHolder
+                    ): Boolean {
+                        return false
+                    }
 
-        val simpleCallback: ItemTouchHelper.SimpleCallback =
-            object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    return false
-                }
-
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    if (direction == ItemTouchHelper.LEFT) {
-                        //delete the current item from DB
-                        Log.d(TAG,"onSwiped: trying to delete item : " + viewHolder.adapterPosition)
-                        if (userID != null) {
-                            deleteItem(userID, viewHolder.adapterPosition)
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                        if (direction == ItemTouchHelper.LEFT) {
+                            //delete the current item from DB
+                            Log.d(TAG,"onSwiped: trying to delete item : " + viewHolder.adapterPosition)
+                            if (userID != null) {
+                                deleteItem(userID, viewHolder.adapterPosition)
+                            }
                         }
                     }
                 }
-            }
 
-        val helper = ItemTouchHelper(simpleCallback)
-        helper.attachToRecyclerView(binding.rvItems)
+            val helper = ItemTouchHelper(simpleCallback)
+            helper.attachToRecyclerView(binding.rvItems)
+        }
+        else {
+            binding.floatingActionButton.visibility = View.GONE
+        }
     }
 
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "TEST - onStart() is executing")
         itemArrayList = ArrayList()
-        userRepository.getAllItemsInSellerAccount()
+        Log.d(TAG, "onStart: $userType")
+        if (userType == "Seller") {
+            userRepository.getAllItemsInSellerAccount()
+        }
+        else {
+            userRepository.getAllSellerItems()
+        }
+
 
         // recycler view
         itemAdapter = BuyerListAdapter(this.requireContext(), itemArrayList, this)
@@ -116,20 +128,38 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume() is executing now... ")
-        userRepository.getAllItemsInSellerAccount()
+        if (userType == "Seller") {
+            userRepository.getAllItemsInSellerAccount()
+            userRepository.allItemsInUserAccount.observe(this, Observer { itemList ->
+                Log.d(TAG, "onResume: Size - ${itemList.size}")
+                itemArrayList.clear()
 
-        userRepository.allItemsInUserAccount.observe(this, Observer { itemList ->
-            Log.d(TAG, "onResume: Size - ${itemList.size}")
-            itemArrayList.clear()
-
-            if (itemList != null) {
-                for (item in itemList) {
-                    itemArrayList.add(Item(itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
-                    Log.d(TAG, "onResume: $item")
-                    itemAdapter?.notifyDataSetChanged()
+                if (itemList != null) {
+                    for (item in itemList) {
+                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
+                        Log.d(TAG, "onResume: $item")
+                        itemAdapter?.notifyDataSetChanged()
+                    }
                 }
-            }
-        })
+            })
+        }
+        else {
+            userRepository.getAllSellerItems()
+            userRepository.allItemsForBuyer.observe(this, Observer { itemList ->
+                Log.d(TAG, "onResume: Size - ${itemList.size}")
+                itemArrayList.clear()
+
+                if (itemList != null) {
+                    for (item in itemList) {
+                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
+                        Log.d(TAG, "onResume: $item")
+                        itemAdapter?.notifyDataSetChanged()
+                    }
+                }
+            })
+        }
+
+
     }
 
     override fun onPause() {
@@ -144,8 +174,13 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
     override fun onItemClicked(item: Item, position: Int) {
         Toast.makeText(context, "${item.itemName} selected at position $position", Toast.LENGTH_SHORT).show()
+        Log.d(TAG, "onItemClicked: ${item}")
+        val action = if (userType == "Seller") {
+            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
+        } else {
+            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
+        }
 
-        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item, userRepository.allItemsInUserAccount.value!!.get(position).itemID)
         findNavController().navigate(action)
     }
 

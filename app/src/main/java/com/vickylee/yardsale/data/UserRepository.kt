@@ -1,5 +1,6 @@
 package com.vickylee.yardsale.data
 
+import android.content.ClipDescription
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -36,6 +37,7 @@ class UserRepository(private val context: Context) {
 
     var user: MutableLiveData<User?> = MutableLiveData<User?>()
     var allItemsInUserAccount: MutableLiveData<List<Item>> = MutableLiveData<List<Item>>()
+    var allItemsForBuyer: MutableLiveData<List<Item>> = MutableLiveData<List<Item>>()
 
     private val sharedPreference =
         context.getSharedPreferences("YARD_SALE_PREFS", Context.MODE_PRIVATE)
@@ -174,6 +176,7 @@ class UserRepository(private val context: Context) {
                                 documentChange.document.toObject(Item::class.java)
 
                             currentItem.itemID = documentChange.document.id
+                            currentItem.sellerID = userDocumentID
                             currentItem.itemName = documentChange.document.get(FIELD_ITEM_NAME).toString()
                             currentItem.itemPrice = documentChange.document.get(FIELD_ITEM_PRICE).toString().toDouble()
                             currentItem.itemDescription = documentChange.document.get(FIELD_ITEM_DESCRIPTION).toString()
@@ -205,6 +208,63 @@ class UserRepository(private val context: Context) {
         }
     }
     //endregion
+
+    // get all seller items list
+    fun getAllSellerItems() {
+        try {
+            db.collection(COLLECTION_NAME)
+                .whereEqualTo(FIELD_USER_TYPE, "Seller")
+                .addSnapshotListener(EventListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e(TAG, "getAllSellerItems: Listening to collection documents FAILED ${error}", )
+                        return@EventListener
+                    }
+                    
+                    if (snapshot != null) {
+                        Log.d(TAG, "getAllSellerItems: recieved items ${snapshot.size()} Received the documents from collection ${snapshot}")
+                        val itemsArrayList: MutableList<Item> = ArrayList<Item>()
+                        for (documentChange in snapshot.documentChanges) {
+                            val currentUser: User =
+                                documentChange.document.toObject(User::class.java)
+                            currentUser.id = documentChange.document.id
+                            Log.d(TAG, "getAllSellerItems: $currentUser")
+                            db.collection(COLLECTION_NAME).document(currentUser.id)
+                                .collection(SUB_COLLECTION_NAME)
+                                .addSnapshotListener(EventListener { items, error -> 
+                                    if (error != null) {
+                                        Log.e(TAG, "getAllSellerItems: Listening to collection documents FAILED ${error}", )
+                                        return@EventListener
+                                    }
+                                    
+                                    if (items != null) {
+                                        Log.d(TAG, "getAllSellerItems: recieved items ${items.size()} Received the documents from collection ${items}")
+                                        for (documentChange in items.documentChanges) {
+                                            val currentItem: Item = documentChange.document.toObject(Item::class.java)
+                                            currentItem.sellerID = currentUser.id
+                                            currentItem.itemID = documentChange.document.id
+                                            currentItem.itemName = documentChange.document.get(FIELD_ITEM_NAME).toString()
+                                            currentItem.itemPrice = documentChange.document.get(FIELD_ITEM_PRICE).toString().toDouble()
+                                            currentItem.itemDescription = documentChange.document.get(FIELD_ITEM_DESCRIPTION).toString()
+                                            currentItem.isItemAvailable = documentChange.document.get(FIELD_ITEM_IS_AVAILABLE).toString().toBoolean()
+
+                                            Log.d(TAG, "getAllSellerItems: $currentItem")
+                                            itemsArrayList.add(currentItem)
+                                        }
+                                        allItemsForBuyer.postValue(itemsArrayList)
+                                    }
+                                    
+                                })
+                            
+                            
+                        }
+                    }
+                    
+                })
+        }
+        catch (ex: Exception) {
+            Log.e(TAG, "getAllSellerItems: $ex", )
+        }
+    }
 
     // Get user details for profile
     fun getUserDetailsFromDB(userID: String) {
@@ -238,6 +298,7 @@ class UserRepository(private val context: Context) {
 
     }
 
+    // Update user details
     fun updateUserDetails(userID: String, phone: String, address: String) {
         try{
             db.collection(COLLECTION_NAME).document(userID)
@@ -254,6 +315,7 @@ class UserRepository(private val context: Context) {
         }
     }
 
+    // Change password
     fun changePassword(userID: String, newPassword: String) {
         try{
             db.collection(COLLECTION_NAME).document(userID)
@@ -270,6 +332,7 @@ class UserRepository(private val context: Context) {
         }
     }
 
+    // Delete Item from list
     fun deleteItem(userID: String, itemID: String) {
         try{
             db.collection(COLLECTION_NAME).document(userID)
@@ -288,6 +351,7 @@ class UserRepository(private val context: Context) {
         }
     }
 
+    // Update item availability status
     fun updateItemAvailability(userID: String, itemID: String, itemStatus: Boolean) {
         try{
             db.collection(COLLECTION_NAME).document(userID)
@@ -304,4 +368,24 @@ class UserRepository(private val context: Context) {
             Log.e(TAG, "updateItemAvailability: Update failed", )
         }
     }
+
+    // Update item by seller
+
+    fun updateItem(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double) {
+        try{
+            db.collection(COLLECTION_NAME).document(userID)
+                .collection(SUB_COLLECTION_NAME).document(itemID)
+                .update(FIELD_ITEM_NAME, itemName, FIELD_ITEM_PRICE, itemPrice, FIELD_ITEM_DESCRIPTION, itemDescription)
+                .addOnSuccessListener {
+                    Log.d(TAG, "updateItem: Updated successfully")
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "updateItem: Update Failed", )
+                }
+        }
+        catch (ex: Exception) {
+            Log.e(TAG, "updateItem: Update failed", )
+        }
+    }
+
 }

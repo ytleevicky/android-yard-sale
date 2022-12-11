@@ -66,9 +66,26 @@
         <argument
             android:name="item"
             app:argType="com.vickylee.yardsale.data.Item" />
+        <action
+            android:id="@+id/action_itemDetailsFragment_to_editItemFragment"
+            app:destination="@id/editItemFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addFavoriteFragment"
+        android:name="com.vickylee.yardsale.fragments.AddFavoriteFragment"
+        android:label="fragment_add_favorite"
+        tools:layout="@layout/fragment_add_favorite" />
+    <fragment
+        android:id="@+id/editItemFragment"
+        android:name="com.vickylee.yardsale.fragments.EditItemFragment"
+        android:label="fragment_edit_item"
+        tools:layout="@layout/fragment_edit_item" >
         <argument
-            android:name="itemID"
-            app:argType="string" />
+            android:name="item"
+            app:argType="com.vickylee.yardsale.data.Item" />
+        <action
+            android:id="@+id/action_editItemFragment_to_listViewFragment"
+            app:destination="@id/listViewFragment" />
     </fragment>
 
 </navigation>

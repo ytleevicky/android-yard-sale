@@ -6,11 +6,46 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
+import com.vickylee.yardsale.databinding.ActivityMain2Binding
+import com.vickylee.yardsale.databinding.ActivityMainBinding
 
 class MainActivity2 : AppCompatActivity() {
+
+    //region Properties
+    val TAG = this@MainActivity2.toString()
+    private lateinit var binding: ActivityMain2Binding
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var navController: NavController
+    //endregion
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main2)
+        binding = ActivityMain2Binding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // setup bottom navigation
+        val bottomNavigationView = binding.bottomNavigationView
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.fragment_container2) as NavHostFragment
+        val navController = navHostFragment.navController
+        bottomNavigationView.setupWithNavController(navController)
+
+        // setup back button navigation
+        this.navController = navHostFragment.navController
+        //appBarConfiguration = AppBarConfiguration(navController.graph)
+        appBarConfiguration = AppBarConfiguration(bottomNavigationView.menu)
+
+        setupActionBarWithNavController(navController, appBarConfiguration)
+    }
+
+    //region Add Back button
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
     //region Top menu - Logout button
