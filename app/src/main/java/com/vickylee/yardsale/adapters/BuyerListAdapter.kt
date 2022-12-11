@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.google.api.LogDescriptor
 import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.OnItemClickListener
 import com.vickylee.yardsale.databinding.ItemBinding
@@ -28,6 +29,7 @@ class BuyerListAdapter(
                 SimpleDateFormat("dd/MM/yyyy").format(currentItem.creationTimestamp.toDate())
             binding.tvPostedDate.setText(formattedDate.toString())
 
+            Log.d("TAG", "bind: ${currentItem.isItemAvailable}")
             if (currentItem.isItemAvailable) {
                 binding.tvItemStatus.setText("Available")
             } else {
@@ -35,8 +37,7 @@ class BuyerListAdapter(
             }
 
             itemView.setOnClickListener {
-
-                clickListener.onItemClicked(currentItem)
+                clickListener.onItemClicked(currentItem, this.adapterPosition)
             }
         }
     }

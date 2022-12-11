@@ -19,17 +19,33 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
+    <ImageView
+        android:id="@+id/iv_profile_pic"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/ic_launcher_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+
+    <TextView
+        android:id="@+id/tv_pick_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick Image"
+        app:layout_constraintStart_toEndOf="@+id/iv_profile_pic"
+        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+
+
     <EditText
         android:id="@+id/edt_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:enabled="false"
+        android:hint="Name"
         android:inputType="text"
         android:textSize="20sp"
-        android:hint="Name"
-        android:layout_marginTop="15dp"
-        android:enabled="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+        app:layout_constraintTop_toBottomOf="@+id/iv_profile_pic" />
 
 
     <EditText

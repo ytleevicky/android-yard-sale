@@ -1,5 +1,5 @@
 package com.vickylee.yardsale.data
 
 interface OnItemClickListener {
-    fun onItemClicked(item: Item)
+    fun onItemClicked(item: Item, position: Int)
 }

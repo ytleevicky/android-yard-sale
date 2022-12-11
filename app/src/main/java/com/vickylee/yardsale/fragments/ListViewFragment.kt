@@ -110,6 +110,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         itemAdapter = BuyerListAdapter(this.requireContext(), itemArrayList, this)
         binding.rvItems.layoutManager = LinearLayoutManager(this.requireContext())
         binding.rvItems.adapter = itemAdapter
+
     }
 
     override fun onResume() {
@@ -141,8 +142,11 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         _binding = null
     }
 
-    override fun onItemClicked(item: Item) {
-        Toast.makeText(context, "${item.itemName} selected", Toast.LENGTH_SHORT).show()
+    override fun onItemClicked(item: Item, position: Int) {
+        Toast.makeText(context, "${item.itemName} selected at position $position", Toast.LENGTH_SHORT).show()
+
+        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item, userRepository.allItemsInUserAccount.value!!.get(position).itemID)
+        findNavController().navigate(action)
     }
 
     private fun deleteItem(userId: String, position: Int) {
