@@ -136,7 +136,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
                 if (itemList != null) {
                     for (item in itemList) {
-                        itemArrayList.add(Item(sellerID = item.sellerID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
+                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
                         Log.d(TAG, "onResume: $item")
                         itemAdapter?.notifyDataSetChanged()
                     }
@@ -151,7 +151,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
                 if (itemList != null) {
                     for (item in itemList) {
-                        itemArrayList.add(Item(sellerID = item.sellerID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
+                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
                         Log.d(TAG, "onResume: $item")
                         itemAdapter?.notifyDataSetChanged()
                     }
@@ -174,12 +174,11 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
     override fun onItemClicked(item: Item, position: Int) {
         Toast.makeText(context, "${item.itemName} selected at position $position", Toast.LENGTH_SHORT).show()
-
+        Log.d(TAG, "onItemClicked: ${item}")
         val action = if (userType == "Seller") {
-            Log.d(TAG, "onItemClicked: ${userRepository.allItemsInUserAccount.value!!.get(position).itemID}")
-            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item, userRepository.allItemsInUserAccount.value!!.get(position).itemID)
+            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
         } else {
-            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item, userRepository.allItemsForBuyer.value!!.get(position).itemID)
+            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
         }
 
         findNavController().navigate(action)

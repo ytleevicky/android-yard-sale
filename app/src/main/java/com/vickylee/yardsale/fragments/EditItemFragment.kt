@@ -51,7 +51,7 @@ class EditItemFragment : Fragment() {
             binding.edtItemDescription.setText(args.item.itemDescription)
             binding.edtItemPrice.setText(args.item.itemPrice.toString())
             binding.btnSaveItem.setOnClickListener {
-                userRepository.updateItem(userID, args.itemID, binding.edtItemName.text.toString(), binding.edtItemDescription.text.toString(), binding.edtItemPrice.text.toString().toDouble())
+                userRepository.updateItem(userID, args.item.itemID, binding.edtItemName.text.toString(), binding.edtItemDescription.text.toString(), binding.edtItemPrice.text.toString().toDouble())
                 val action = EditItemFragmentDirections.actionEditItemFragmentToListViewFragment()
                 findNavController().navigate(action)
             }

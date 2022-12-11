@@ -69,16 +69,16 @@ class ItemDetailsFragment : Fragment() {
             }
             binding.btnItemStatus.setOnClickListener {
                 itemStatus = !itemStatus
-                Log.d(TAG, "onViewCreated: ${itemStatus} ${args.itemID}")
+                Log.d(TAG, "onViewCreated: ${itemStatus} ${args.item.itemID}")
                 if (userID != null) {
-                    userRepository.updateItemAvailability(userID, args.itemID, itemStatus)
+                    userRepository.updateItemAvailability(userID, args.item.itemID, itemStatus)
                 }
                 val action = ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
                 findNavController().navigate(action)
             }
 
             binding.ivEdit.setOnClickListener {
-                val action = ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment(args.item, args.itemID)
+                val action = ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment(args.item)
                 findNavController().navigate(action)
             }
         }

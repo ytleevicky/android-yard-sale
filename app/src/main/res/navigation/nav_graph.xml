@@ -66,9 +66,6 @@
         <argument
             android:name="item"
             app:argType="com.vickylee.yardsale.data.Item" />
-        <argument
-            android:name="itemID"
-            app:argType="string" />
         <action
             android:id="@+id/action_itemDetailsFragment_to_editItemFragment"
             app:destination="@id/editItemFragment" />
@@ -86,9 +83,6 @@
         <argument
             android:name="item"
             app:argType="com.vickylee.yardsale.data.Item" />
-        <argument
-            android:name="itemID"
-            app:argType="string" />
         <action
             android:id="@+id/action_editItemFragment_to_listViewFragment"
             app:destination="@id/listViewFragment" />
