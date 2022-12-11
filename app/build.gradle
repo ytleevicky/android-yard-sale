@@ -70,6 +70,9 @@ dependencies {
     // Firestore
     implementation 'com.google.firebase:firebase-firestore-ktx'
 
+    // Firebase storage
+    implementation 'com.google.firebase:firebase-storage-ktx'
+
     //for livedata
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
 
@@ -81,4 +84,5 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     // CameraX View class
     implementation "androidx.camera:camera-view:1.1.0"
+
 }

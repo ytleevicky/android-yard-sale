@@ -1,17 +1,24 @@
 package com.vickylee.yardsale.data
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import java.util.HashMap
-import kotlin.math.log
+import com.google.firebase.storage.FirebaseStorage
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+
 
 class UserRepository(private val context: Context) {
     //region Properties
@@ -229,7 +236,7 @@ class UserRepository(private val context: Context) {
             })
         }
         catch (ex:Exception) {
-            Log.e(TAG, "getUserDetailsFromDB: Couldn't find user", )
+            Log.e(TAG, "getUserDetailsFromDB: Couldn't find user")
         }
 
     }
@@ -242,11 +249,11 @@ class UserRepository(private val context: Context) {
                     Log.d(TAG, "updateUserDetails: Updated successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                    Log.e(TAG, "updateUserDetails: Update Failed")
                 }
         }
         catch (ex: Exception) {
-            Log.e(TAG, "updateUserDetails: Update failed", )
+            Log.e(TAG, "updateUserDetails: Update failed")
         }
     }
 
@@ -258,11 +265,11 @@ class UserRepository(private val context: Context) {
                     Log.d(TAG, "updateUserDetails: Updated successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                    Log.e(TAG, "updateUserDetails: Update Failed")
                 }
         }
         catch (ex: Exception) {
-            Log.e(TAG, "updateUserDetails: Update failed", )
+            Log.e(TAG, "updateUserDetails: Update failed")
         }
     }
 
@@ -276,11 +283,29 @@ class UserRepository(private val context: Context) {
                     Log.d(TAG, "deleteItem: deleted successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "deleteItem: delete Failed", )
+                    Log.e(TAG, "deleteItem: delete Failed")
                 }
         }
         catch (ex: Exception) {
-            Log.e(TAG, "deleteItem: delete failed", )
+            Log.e(TAG, "deleteItem: delete failed")
         }
+    }
+
+    fun uploadImage(imageUri: Uri) {
+
+        val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
+        val now = Date()
+        val fileName = formatter.format(now)
+
+        val storageReference = FirebaseStorage.getInstance().getReference("images/$fileName")
+
+        storageReference.putFile(imageUri)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Successfully uploaded", Toast.LENGTH_SHORT).show()
+
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Fail uploaded", Toast.LENGTH_SHORT).show()
+            }
     }
 }
