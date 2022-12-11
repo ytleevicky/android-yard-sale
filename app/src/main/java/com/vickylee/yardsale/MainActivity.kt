@@ -1,5 +1,6 @@
 package com.vickylee.yardsale
 
+import android.R.attr
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -9,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.vickylee.yardsale.databinding.ActivityMainBinding
@@ -71,6 +71,13 @@ class MainActivity : AppCompatActivity() {
     }
     //endregion
 
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        for (fragment in supportFragmentManager.fragments) {
+//            fragment.onActivityResult(requestCode, resultCode, data)
+//        }
+//    }
+
     //region Helper functions
     private fun showAlertBoxForLogout() {
         val builder = AlertDialog.Builder(this@MainActivity)
@@ -115,6 +122,8 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
+
+
     //endregion
 
 }

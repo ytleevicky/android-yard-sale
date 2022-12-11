@@ -174,7 +174,11 @@ class UserRepository(private val context: Context) {
                                 documentChange.document.toObject(Item::class.java)
 
                             currentItem.itemID = documentChange.document.id
-//
+                            currentItem.itemName = documentChange.document.get(FIELD_ITEM_NAME).toString()
+                            currentItem.itemPrice = documentChange.document.get(FIELD_ITEM_PRICE).toString().toDouble()
+                            currentItem.itemDescription = documentChange.document.get(FIELD_ITEM_DESCRIPTION).toString()
+                            currentItem.isItemAvailable = documentChange.document.get(FIELD_ITEM_IS_AVAILABLE).toString().toBoolean()
+
                             when (documentChange.type) {
                                 DocumentChange.Type.ADDED -> {
                                     itemsArrayList.add(currentItem)
@@ -281,6 +285,23 @@ class UserRepository(private val context: Context) {
         }
         catch (ex: Exception) {
             Log.e(TAG, "deleteItem: delete failed", )
+        }
+    }
+
+    fun updateItemAvailability(userID: String, itemID: String, itemStatus: Boolean) {
+        try{
+            db.collection(COLLECTION_NAME).document(userID)
+                .collection(SUB_COLLECTION_NAME).document(itemID)
+                .update(FIELD_ITEM_IS_AVAILABLE, itemStatus)
+                .addOnSuccessListener {
+                    Log.d(TAG, "updateItemAvailability: Updated successfully")
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "updateItemAvailability: Update Failed", )
+                }
+        }
+        catch (ex: Exception) {
+            Log.e(TAG, "updateItemAvailability: Update failed", )
         }
     }
 }

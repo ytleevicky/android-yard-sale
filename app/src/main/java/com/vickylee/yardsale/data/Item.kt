@@ -10,4 +10,4 @@ data class Item(
     var itemPrice: Double = 0.0,
     var isItemAvailable: Boolean = true,
     var creationTimestamp: Timestamp = Timestamp.now()
-)
+) : java.io.Serializable
