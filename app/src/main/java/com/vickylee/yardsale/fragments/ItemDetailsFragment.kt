@@ -11,9 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.vickylee.yardsale.R
-import com.vickylee.yardsale.adapters.BuyerListAdapter
-import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentItemDetailsBinding
 import androidx.lifecycle.Observer
@@ -87,8 +84,6 @@ class ItemDetailsFragment : Fragment() {
 
             val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
 
-            Log.e("userFavItemList", "userFavItemList: $userFavItemList")
-
             // user currently has no favorite items
             if (userFavItemList == null || userFavItemList.isEmpty()) {
                 binding.btnAddFav.visibility = View.VISIBLE
@@ -128,8 +123,6 @@ class ItemDetailsFragment : Fragment() {
                 Toast.makeText(requireContext(), "Removed from favorite.", Toast.LENGTH_SHORT)
                     .show()
             }
-
         }
-
     }
 }

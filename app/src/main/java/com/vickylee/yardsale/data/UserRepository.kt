@@ -22,6 +22,7 @@ class UserRepository(private val context: Context) {
     private val FIELD_USER_ADDRESS = "address"
     private val FIELD_USER_PASSWORD = "password"
     private val FIELD_USER_TYPE = "userType"
+    private val FIELD_USER_FAV_ITEMS = "favItems"
 
     private val SUB_COLLECTION_NAME = "items"
     private val FIELD_ITEM_NAME = "itemName"
@@ -29,9 +30,6 @@ class UserRepository(private val context: Context) {
     private val FIELD_ITEM_PRICE = "itemPrice"
     private val FIELD_ITEM_IS_AVAILABLE = "isItemAvailable"
     private val FIELD_ITEM_CREATION_TIME = "creation_time_ms"
-
-    private val SUB_COLLECTION_FAV = "favoriteItems"
-    private val FIELD_FAV_ITEM_ID = "favItemID"
 
     private lateinit var currentUser: User
 
@@ -55,6 +53,7 @@ class UserRepository(private val context: Context) {
             data[FIELD_USER_PHONE] = newUser.phone
             data[FIELD_USER_ADDRESS] = newUser.address
             data[FIELD_USER_TYPE] = newUser.userType
+            data[FIELD_USER_FAV_ITEMS] = arrayListOf<String>()
 
             db.collection(COLLECTION_NAME).add(data).addOnSuccessListener { docRef ->
                 Log.d(TAG, "addUserToDB: Document added with ID ${docRef.id}")
@@ -106,7 +105,9 @@ class UserRepository(private val context: Context) {
                                 "searchUserWithEmail: User found: ${documentChange.document.id}",
                             )
 
-                            storeUserFavItemsToSharedPrefs(documentChange.document.id)
+                            val fav =
+                                documentChange.document.data.get(FIELD_USER_FAV_ITEMS) as ArrayList<String>?
+                            editor.putStringSet("USER_FAV_ITEMS", fav?.toMutableSet())
 
                             editor.commit()
                         }
@@ -296,7 +297,6 @@ class UserRepository(private val context: Context) {
     // Get user details for profile
     fun getUserDetailsFromDB(userID: String) {
         try {
-
             val docRef = db.collection(COLLECTION_NAME).document(userID)
 
             docRef.addSnapshotListener(EventListener { snapshot, error ->
@@ -316,7 +316,6 @@ class UserRepository(private val context: Context) {
                     }
                     user.postValue(currentUser)
                 }
-
             })
         } catch (ex: Exception) {
             Log.e(TAG, "getUserDetailsFromDB: Couldn't find user")
@@ -423,106 +422,36 @@ class UserRepository(private val context: Context) {
 
     fun addItemToFavorites(itemID: String) {
         try {
-            val data: MutableMap<String, Any> = HashMap()
-            data[FIELD_FAV_ITEM_ID] = itemID
-
             val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
 
             db.collection(COLLECTION_NAME).document(userDocumentID)
-                .collection(SUB_COLLECTION_FAV)
-                .add(data)
-                .addOnSuccessListener { docRef ->
-                    Log.d(TAG, "addItemToFavorites: Document added with ID ${docRef.id}")
-                    storeUserFavItemsToSharedPrefs(userDocumentID)
-
-                }.addOnFailureListener {
-                    Log.e(TAG, "addItemToFavorites: $it")
+                .update(FIELD_USER_FAV_ITEMS, FieldValue.arrayUnion(itemID))
+                .addOnSuccessListener {
+                    Log.d(TAG, "addItemToFavorites: Updated successfully")
                 }
-
+                .addOnFailureListener {
+                    Log.e(TAG, "addItemToFavorites: Update Failed")
+                }
         } catch (ex: Exception) {
-            Log.e(TAG, "addItemToFavorites: ${ex.toString()}")
+            Log.e(TAG, "addItemToFavorites: Update failed")
         }
     }
 
     fun removeItemFromFavorites(removeItemID: String) {
-        val currentLoggedInUser = sharedPreference.getString("USER_DOC_ID", "")!!
-
         try {
-            db.collection(COLLECTION_NAME)
-                .document(currentLoggedInUser)
-                .collection(SUB_COLLECTION_FAV)
-                .addSnapshotListener(EventListener { snapshot, error ->
-                    if (error != null) {
-                        Log.e(
-                            TAG,
-                            "removeItemFromFavorites: Listening to collection documents FAILED ${error}",
-                        )
-                        return@EventListener
-                    }
+            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
 
-                    if (snapshot != null) {
-                        Log.d(
-                            TAG,
-                            "removeItemFromFavorites: recieved items ${snapshot.size()} Received the documents from collection ${snapshot}"
-                        )
-
-                        for (documentChange in snapshot.documentChanges) {
-                            val currentFavItem = documentChange.document
-
-                            if (currentFavItem.get(FIELD_FAV_ITEM_ID) == removeItemID) {
-                                db.collection(COLLECTION_NAME).document(currentLoggedInUser)
-                                    .collection(SUB_COLLECTION_FAV).document(currentFavItem.id)
-                                    .delete()
-                                    .addOnSuccessListener {
-                                        Log.d(TAG, "removeItemFromFavorites: delete successfully")
-
-                                        // refresh fav item list
-                                        storeUserFavItemsToSharedPrefs(currentLoggedInUser)
-
-                                    }.addOnFailureListener {
-                                        Log.d(TAG, "removeItemFromFavorites: delete failed")
-                                    }
-                            }
-
-                        }
-                    }
-
-                })
-        } catch (ex: Exception) {
-            Log.e(TAG, "removeItemFromFavorites: $ex")
-        }
-
-    }
-
-    fun storeUserFavItemsToSharedPrefs(userID: String) {
-        try {
-
-            val docRef =
-                db.collection(COLLECTION_NAME).document(userID).collection(SUB_COLLECTION_FAV)
-
-            docRef.addSnapshotListener(EventListener { snapshot, error ->
-                if (error != null) {
-                    Log.e(TAG, "getUserFavItems: Listening to collect documents FAILED $error")
-                    return@EventListener
+            db.collection(COLLECTION_NAME).document(userDocumentID)
+                .update(FIELD_USER_FAV_ITEMS, FieldValue.arrayRemove(removeItemID))
+                .addOnSuccessListener {
+                    Log.d(TAG, "removeItemFromFavorites: removeItem successfully")
                 }
-
-                if (snapshot != null) {
-                    val favItemList = mutableSetOf<String>()
-
-                    for (documentChange in snapshot.documentChanges) {
-                        val currentItem = documentChange.document
-                        val favItemID = currentItem.get("favItemID").toString()
-                        favItemList.add(favItemID)
-                    }
-
-                    editor.putStringSet("USER_FAV_ITEMS", favItemList).commit()
+                .addOnFailureListener {
+                    Log.e(TAG, "removeItemFromFavorites: removeItem Failed")
                 }
-
-            })
         } catch (ex: Exception) {
-            Log.e(TAG, "getUserFavItems: Couldn't find user fav")
+            Log.e(TAG, "removeItemFromFavorites: removeItem failed")
         }
     }
-
     //endregion
 }

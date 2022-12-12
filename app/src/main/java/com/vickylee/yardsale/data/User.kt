@@ -1,7 +1,6 @@
 package com.vickylee.yardsale.data
 
 import java.util.*
-import kotlin.collections.ArrayList
 
 data class User(
     var id: String = UUID.randomUUID().toString(),
@@ -11,4 +10,5 @@ data class User(
     var address: String = "",
     var password: String = "",
     var userType: String = "",
+    var favItems: ArrayList<String> = arrayListOf()
 ) {}
