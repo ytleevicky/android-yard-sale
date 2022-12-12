@@ -1,5 +1,6 @@
 package com.vickylee.yardsale.data
 
+import android.net.Uri
 import java.util.*
 
 data class User (var id : String = UUID.randomUUID().toString(),
@@ -8,5 +9,6 @@ data class User (var id : String = UUID.randomUUID().toString(),
                  var phone: String = "",
                  var address : String = "",
                  var password : String = "",
-                 var userType : String = ""
+                 var userType : String = "",
+                 var profilePic: String = ""
 ){}

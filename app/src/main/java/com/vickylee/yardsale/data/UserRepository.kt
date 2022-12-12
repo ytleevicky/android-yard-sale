@@ -2,15 +2,15 @@ package com.vickylee.yardsale.data
 
 import android.content.ClipDescription
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.EventListener
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import java.util.HashMap
 import kotlin.math.log
 
@@ -25,6 +25,7 @@ class UserRepository(private val context: Context) {
     private val FIELD_USER_ADDRESS = "address"
     private val FIELD_USER_PASSWORD = "password"
     private val FIELD_USER_TYPE = "userType"
+    private val FIELD_PROFILE_PIC = "profilePic"
 
     private val SUB_COLLECTION_NAME = "items"
     private val FIELD_ITEM_NAME = "itemName"
@@ -42,6 +43,8 @@ class UserRepository(private val context: Context) {
     private val sharedPreference =
         context.getSharedPreferences("YARD_SALE_PREFS", Context.MODE_PRIVATE)
     private var editor = sharedPreference.edit()
+    private lateinit var storageRef: StorageReference
+    private lateinit var firebaseFirestore: FirebaseFirestore
     //endregion
 
     //region Functions
@@ -286,6 +289,7 @@ class UserRepository(private val context: Context) {
                         currentUser.name = snapshot.get(FIELD_USER_NAME).toString()
                         currentUser.phone = snapshot.get(FIELD_USER_PHONE).toString()
                         currentUser.password = snapshot.get(FIELD_USER_PASSWORD).toString()
+                        currentUser.profilePic = snapshot.get(FIELD_PROFILE_PIC).toString()
                     }
                     user.postValue(currentUser)
                 }
@@ -299,16 +303,30 @@ class UserRepository(private val context: Context) {
     }
 
     // Update user details
-    fun updateUserDetails(userID: String, phone: String, address: String) {
+    fun updateUserDetails(userID: String, phone: String, address: String, imageUri: Uri) {
         try{
-            db.collection(COLLECTION_NAME).document(userID)
-                .update( FIELD_USER_PHONE, phone, FIELD_USER_ADDRESS, address)
-                .addOnSuccessListener {
-                    Log.d(TAG, "updateUserDetails: Updated successfully")
+            Log.d(TAG, "updateUserDetails: Starting update")
+            storageRef = FirebaseStorage.getInstance().reference.child("Images")
+            firebaseFirestore = FirebaseFirestore.getInstance()
+            storageRef = storageRef.child(System.currentTimeMillis().toString())
+            imageUri?.let {
+                    it1 -> storageRef.putFile(it1).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        storageRef.downloadUrl.addOnSuccessListener { uri ->
+                            db.collection(COLLECTION_NAME).document(userID)
+                                .update( FIELD_USER_PHONE, phone, FIELD_USER_ADDRESS, address, FIELD_PROFILE_PIC, uri.toString())
+                                .addOnSuccessListener {
+                                    Log.d(TAG, "updateUserDetails: Updated successfully")
+                                }
+                                .addOnFailureListener {
+                                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                                }
+                        }
+                    }
+
                 }
-                .addOnFailureListener {
-                    Log.e(TAG, "updateUserDetails: Update Failed", )
-                }
+            }
+
         }
         catch (ex: Exception) {
             Log.e(TAG, "updateUserDetails: Update failed", )

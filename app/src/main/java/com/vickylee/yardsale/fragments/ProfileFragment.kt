@@ -1,6 +1,7 @@
 package com.vickylee.yardsale.fragments
 
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,12 +10,14 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentProfileBinding
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.squareup.picasso.Picasso
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -99,6 +102,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         userRepository.user.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
+                val imageView = binding.ivProfilePic
+                Picasso.with(context).load(it.profilePic).into(imageView)
                 binding.tvName.text = it.name
                 binding.tvEmail.text = it.email
                 binding.tvPhone.text = it.phone
