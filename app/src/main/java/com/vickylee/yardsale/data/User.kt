@@ -11,4 +11,5 @@ data class User (var id : String = UUID.randomUUID().toString(),
                  var password : String = "",
                  var userType : String = "",
                  var profilePic: String = ""
+                 var favItems: ArrayList<String> = arrayListOf())
 ){}

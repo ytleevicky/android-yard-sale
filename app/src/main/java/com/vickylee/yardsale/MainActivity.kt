@@ -105,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         prefs.edit().putString("USER_DOC_ID", "").apply()
         prefs.edit().putString("USER_TYPE", "").apply()
         prefs.edit().putString("USER_NAME", "").apply()
+        prefs.edit().putStringSet("USER_FAV_ITEMS", null).apply()
 
         if (!rememberUsernameAndPassword) {
             prefs.edit().putString("USER_EMAIL", "").apply()

@@ -58,8 +58,8 @@
     <fragment
         android:id="@+id/itemDetailsFragment"
         android:name="com.vickylee.yardsale.fragments.ItemDetailsFragment"
-        android:label="fragment_item_details"
-        tools:layout="@layout/fragment_item_details" >
+        android:label="@string/fragment_item_details"
+        tools:layout="@layout/fragment_item_details">
         <action
             android:id="@+id/action_itemDetailsFragment_to_listViewFragment"
             app:destination="@id/listViewFragment" />
@@ -73,8 +73,12 @@
     <fragment
         android:id="@+id/addFavoriteFragment"
         android:name="com.vickylee.yardsale.fragments.AddFavoriteFragment"
-        android:label="fragment_add_favorite"
-        tools:layout="@layout/fragment_add_favorite" />
+        android:label="@string/fragment_fav_list"
+        tools:layout="@layout/fragment_add_favorite">
+        <action
+            android:id="@+id/action_addFavoriteFragment_to_itemDetailsFragment"
+            app:destination="@id/itemDetailsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/editItemFragment"
         android:name="com.vickylee.yardsale.fragments.EditItemFragment"

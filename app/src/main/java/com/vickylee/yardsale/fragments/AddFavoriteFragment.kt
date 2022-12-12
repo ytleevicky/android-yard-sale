@@ -1,60 +1,111 @@
 package com.vickylee.yardsale.fragments
 
+import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.vickylee.yardsale.R
+import com.vickylee.yardsale.adapters.BuyerListAdapter
+import com.vickylee.yardsale.data.Item
+import com.vickylee.yardsale.data.OnItemClickListener
+import com.vickylee.yardsale.data.UserRepository
+import com.vickylee.yardsale.databinding.FragmentAddFavoriteBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class AddFavoriteFragment : Fragment(R.layout.fragment_add_favorite), OnItemClickListener {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [AddFavoriteFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class AddFavoriteFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    //region Properties
+    val TAG = this.toString()
+    private var _binding: FragmentAddFavoriteBinding? = null
+    private val binding get() = _binding!!
 
+    private lateinit var prefs: SharedPreferences
+    lateinit var userRepository: UserRepository
+    lateinit var favItemArrayList: ArrayList<Item>
+    var itemAdapter: BuyerListAdapter? = null
+    //endregion
+
+    //region Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
+        prefs =
+            requireContext().getSharedPreferences("YARD_SALE_PREFS", AppCompatActivity.MODE_PRIVATE)
+
+        userRepository = UserRepository(requireContext())
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_favorite, container, false)
+
+        _binding = FragmentAddFavoriteBinding.inflate(inflater, container, false)
+        val view = binding.root
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddFavoriteFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddFavoriteFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        favItemArrayList = ArrayList()
+        userRepository.getAllSellerItems()
+
+        itemAdapter = BuyerListAdapter(this.requireContext(), favItemArrayList, this)
+        binding.rvFavItems.layoutManager = LinearLayoutManager(this.requireContext())
+        binding.rvFavItems.adapter = itemAdapter
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        userRepository.getAllSellerItems()
+        userRepository.allItemsForBuyer.observe(this, Observer { itemList ->
+            favItemArrayList.clear()
+
+            val userFavItems = prefs.getStringSet("USER_FAV_ITEMS", null)
+
+            if (itemList != null && userFavItems != null && userFavItems.size > 0) {
+                for (item in itemList) {
+                    if (userFavItems.contains(item.itemID)) {
+                        favItemArrayList.add(
+                            Item(
+                                sellerID = item.sellerID,
+                                itemID = item.itemID,
+                                itemName = item.itemName,
+                                itemDescription = item.itemDescription,
+                                itemPrice = item.itemPrice,
+                                isItemAvailable = item.isItemAvailable,
+                                creationTimestamp = item.creationTimestamp
+                            )
+                        )
+                        Log.d(TAG, "onResume: $item")
+                        itemAdapter?.notifyDataSetChanged()
+                    }
                 }
             }
+
+        })
     }
+
+    //endregion
+
+    override fun onItemClicked(item: Item, position: Int) {
+        val action = AddFavoriteFragmentDirections.actionAddFavoriteFragmentToItemDetailsFragment(item)
+        findNavController().navigate(action)
+    }
+
 }
+
+
