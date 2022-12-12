@@ -23,9 +23,6 @@ import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.OnItemClickListener
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentListViewBinding
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClickListener {
@@ -136,7 +133,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
                 if (itemList != null) {
                     for (item in itemList) {
-                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
+                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp, itemPic = item.itemPic))
                         Log.d(TAG, "onResume: $item")
                         itemAdapter?.notifyDataSetChanged()
                     }
@@ -146,13 +143,11 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         else {
             userRepository.getAllSellerItems()
             userRepository.allItemsForBuyer.observe(this, Observer { itemList ->
-                Log.d(TAG, "onResume: Size - ${itemList.size}")
                 itemArrayList.clear()
 
                 if (itemList != null) {
                     for (item in itemList) {
-                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp))
-                        Log.d(TAG, "onResume: $item")
+                        itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp, itemPic = item.itemPic))
                         itemAdapter?.notifyDataSetChanged()
                     }
                 }

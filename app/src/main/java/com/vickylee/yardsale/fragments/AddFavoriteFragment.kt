@@ -87,7 +87,8 @@ class AddFavoriteFragment : Fragment(R.layout.fragment_add_favorite), OnItemClic
                                 itemDescription = item.itemDescription,
                                 itemPrice = item.itemPrice,
                                 isItemAvailable = item.isItemAvailable,
-                                creationTimestamp = item.creationTimestamp
+                                creationTimestamp = item.creationTimestamp,
+                                itemPic = item.itemPic
                             )
                         )
                         Log.d(TAG, "onResume: $item")

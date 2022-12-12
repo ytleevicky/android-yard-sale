@@ -8,24 +8,13 @@
     tools:context=".fragments.AddItemFragment">
 
     <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add new item"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
         android:id="@+id/tv_item_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="Item name:"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_title" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/edt_item_name"
@@ -86,7 +75,7 @@
 
     <TextView
         android:id="@+id/tv_photo"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="Photo:"
@@ -101,6 +90,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_photo" />
 
+    <ImageButton
+        android:id="@+id/img_btn_photo_gallery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_photo_gallery"
+        android:tooltipText="Add photo from gallery"
+        app:layout_constraintStart_toEndOf="@id/img_btn_camera"
+        app:layout_constraintTop_toBottomOf="@id/tv_photo" />
+
+    <ImageView
+        android:id="@+id/iv_item_pic"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_btn_camera" />
+
+    <TextView
+        android:id="@+id/tv_error_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:textColor="#E91E63"
+        android:layout_marginHorizontal="10dp"
+        android:gravity="center_horizontal"
+        app:layout_constraintStart_toEndOf="@id/img_btn_photo_gallery"
+        app:layout_constraintBottom_toBottomOf="@id/img_btn_photo_gallery"
+        />
+
     <Button
         android:id="@+id/btn_add_item"
         android:layout_width="match_parent"
@@ -108,7 +124,6 @@
         android:layout_marginTop="10dp"
         android:text="Add"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/img_btn_camera" />
-
+        app:layout_constraintTop_toBottomOf="@+id/iv_item_pic" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
