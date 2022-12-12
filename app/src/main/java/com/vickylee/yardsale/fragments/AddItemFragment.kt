@@ -1,28 +1,24 @@
 package com.vickylee.yardsale.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.vickylee.yardsale.R
-import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentAddItemBinding
-import java.lang.Exception
 
 class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
@@ -31,14 +27,13 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
     private var _binding: FragmentAddItemBinding? = null
     private val binding get() = _binding!!
     lateinit var userRepository: UserRepository
+    private var imageUri: Uri? = null
 
-    // Permission
-    // request code
-    private val REQUEST_PERMISSION_CODE = 1234
-
-    // List of permissions that app requires
-    private val REQUIRED_PERMISSIONS_LIST =
-        arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    companion object {
+        // To track number of the permission request shown to user
+        var camera_cnt = 0
+        var photoGallery_cnt = 0
+    }
 
     //endregion
 
@@ -68,27 +63,21 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         Log.d(TAG, "AddItemFragment - onViewCreated() is executing")
 
         binding.btnAddItem.setOnClickListener {
-            Log.d(TAG, "AddItemFragment - Add button is pressed")
-
             if (validateUserInputData()) {
                 val itemName = binding.edtItemName.text.toString()
                 val itemDescription = binding.edtItemDescription.text.toString()
                 val itemPrice = binding.edtItemPrice.text.toString().toDouble()
 
-                val newItem = Item(
-                    itemName = itemName,
-                    itemDescription = itemDescription,
-                    itemPrice = itemPrice
+                userRepository.addItemToUserAccount(
+                    itemName,
+                    itemDescription,
+                    itemPrice,
+                    imageUri!!
                 )
-                userRepository.addItemToUserAccount(newItem)
 
                 Toast.makeText(context, "New item has been added to the list", Toast.LENGTH_SHORT)
                     .show()
                 resetInputField()
-
-                // navigate to AddItemFragment
-                val action = AddItemFragmentDirections.actionAddItemFragmentToListViewFragment()
-                findNavController().navigate(action)
 
             } else {
                 Toast.makeText(context, "Please provide correct inputs", Toast.LENGTH_SHORT).show()
@@ -96,22 +85,41 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         }
 
         binding.imgBtnCamera.setOnClickListener {
-            // permission
-            if (allPermissionsGranted() == true) {
-                Log.d(TAG, "onViewCreated:  Application has required permission, continuing...")
-                // If the user has provided all permissions, then start the camera preview
 
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.CAMERA),
+                1
+            )
+
+            if (hasCameraPermission()) {
                 // Navigate to Camera Preview Fragment
                 val action =
                     AddItemFragmentDirections.actionAddItemFragmentToCameraPreviewFragment()
                 findNavController().navigate(action)
             } else {
-                // TODO: Otherwise, request permissions
-                requestPermissions(
-                    REQUIRED_PERMISSIONS_LIST,
-                    REQUEST_PERMISSION_CODE
-                )
-                showAlertBoxToEducateUser()
+                if (camera_cnt > 1) {
+                    educateUserToAllowCameraPermission()
+                }
+                camera_cnt++
+            }
+        }
+
+        binding.imgBtnPhotoGallery.setOnClickListener {
+
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                2
+            )
+
+            if (hasExternalStoragePermission()) {
+                selectPhoto()
+            } else {
+                if (photoGallery_cnt > 1) {
+                    educateUserToAllowPhotoAccessPermission()
+                }
+                photoGallery_cnt++
             }
         }
     }
@@ -159,6 +167,14 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             itemPrice = binding.edtItemPrice.text.toString()
         }
 
+        // item image
+        if (imageUri == null) {
+            binding.tvErrorMsg.text = "Please provide an image"
+            validateDataResult = false
+        } else {
+            binding.tvErrorMsg.text = ""
+        }
+
         return validateDataResult
     }
 
@@ -166,20 +182,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         binding.edtItemName.setText("")
         binding.edtItemDescription.setText("")
         binding.edtItemPrice.setText("")
+        binding.tvErrorMsg.setText("")
+        binding.ivItemPic.setImageURI(null)
     }
     //endregion
 
     //region Helper function - Permission
-    fun allPermissionsGranted(): Boolean {
-        if (hasCameraPermission() == true && hasExternalStoragePermission() == true) {
-            Log.d(TAG, "checkPermissions: User granted all required permissions")
-            return true
-        } else {
-            Log.d(TAG, "checkPermissions: User is missing some or all of the required permissions")
-            return false
-        }
-    }
-
     private fun hasCameraPermission(): Boolean {
         // returns true of the Camera permission is granted, and false otherwise
         return ContextCompat.checkSelfPermission(
@@ -196,15 +204,43 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun showAlertBoxToEducateUser() {
+    private fun educateUserToAllowCameraPermission() {
         val builder = AlertDialog.Builder(context)
-        builder.setMessage("To take picture, please go to app setting and allow this app to use your camera.")
+        builder.setMessage("In order to select photo from the photo gallery, please go to app setting and allow this app to access your photos and videos.")
             .setCancelable(false)
             .setPositiveButton("OK") { dialog, id ->
             }
 
         val alert = builder.create()
         alert.show()
+    }
+
+    private fun educateUserToAllowPhotoAccessPermission() {
+        val builder = AlertDialog.Builder(context)
+        builder.setMessage("In order to take photo, please go to app setting and allow this app to use your camera.")
+            .setCancelable(false)
+            .setPositiveButton("OK") { dialog, id ->
+            }
+
+        val alert = builder.create()
+        alert.show()
+    }
+    //endregion
+
+    //region Helper Function - Image View
+    @SuppressLint("IntentReset")
+    private fun selectPhoto() {
+        val pickFromGallery = Intent(Intent.ACTION_PICK)
+        pickFromGallery.type = "image/*"
+        startActivityForResult(pickFromGallery, 100)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        imageUri = data?.data
+        Log.d("TAG", "onActivityResult: imageUri: $imageUri")
+        binding.ivItemPic.setImageURI(data?.data)
+        binding.tvErrorMsg.text = ""
     }
     //endregion
 }

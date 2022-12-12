@@ -14,6 +14,7 @@ import androidx.navigation.fragment.navArgs
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentItemDetailsBinding
 import androidx.lifecycle.Observer
+import com.squareup.picasso.Picasso
 
 
 class ItemDetailsFragment : Fragment() {
@@ -54,6 +55,9 @@ class ItemDetailsFragment : Fragment() {
         binding.tvItemName.text = args.item.itemName
         binding.tvItemPrice.text = args.item.itemPrice.toString()
         binding.tvItemDetails.text = args.item.itemDescription
+
+        val imageView = binding.ivItemPic
+        Picasso.with(context).load(args.item.itemPic).into(imageView)
 
         if (userType == "Seller") {
             binding.btnItemStatus.visibility = View.VISIBLE

@@ -8,12 +8,12 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.StorageTask
 import java.util.HashMap
 
 class UserRepository(private val context: Context) {
@@ -36,6 +36,7 @@ class UserRepository(private val context: Context) {
     private val FIELD_ITEM_PRICE = "itemPrice"
     private val FIELD_ITEM_IS_AVAILABLE = "isItemAvailable"
     private val FIELD_ITEM_CREATION_TIME = "creation_time_ms"
+    private val FIELD_ITEM_PIC = "itemPic"
 
     private lateinit var currentUser: User
 
@@ -130,27 +131,49 @@ class UserRepository(private val context: Context) {
     }
 
     // Seller: Add item to account
-    fun addItemToUserAccount(newItem: Item) {
+    fun addItemToUserAccount(
+        itemName: String,
+        itemDescription: String,
+        itemPrice: Double,
+        itemPic: Uri
+    ) {
         try {
-            val data: MutableMap<String, Any> = HashMap()
+            storageRef = FirebaseStorage.getInstance().reference.child("ItemImages")
+            firebaseFirestore = FirebaseFirestore.getInstance()
+            storageRef = storageRef.child(System.currentTimeMillis().toString())
 
-            data[FIELD_ITEM_NAME] = newItem.itemName
-            data[FIELD_ITEM_DESCRIPTION] = newItem.itemDescription
-            data[FIELD_ITEM_PRICE] = newItem.itemPrice
-            data[FIELD_ITEM_IS_AVAILABLE] = newItem.isItemAvailable
-            data[FIELD_ITEM_CREATION_TIME] = FieldValue.serverTimestamp()
+            itemPic?.let { it1 ->
+                storageRef.putFile(it1).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        storageRef.downloadUrl.addOnSuccessListener { uri ->
 
-            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
+                            val data: MutableMap<String, Any> = HashMap()
 
-            db.collection(COLLECTION_NAME).document(userDocumentID)
-                .collection(SUB_COLLECTION_NAME)
-                .add(data)
-                .addOnSuccessListener { docRef ->
-                    Log.d(TAG, "addItemToUserAccount: Document added with ID ${docRef.id}")
+                            data[FIELD_ITEM_NAME] = itemName
+                            data[FIELD_ITEM_DESCRIPTION] = itemDescription
+                            data[FIELD_ITEM_PRICE] = itemPrice
+                            data[FIELD_ITEM_IS_AVAILABLE] = true
+                            data[FIELD_ITEM_CREATION_TIME] = FieldValue.serverTimestamp()
+                            data[FIELD_ITEM_PIC] = uri.toString()
 
-                }.addOnFailureListener {
-                    Log.e(TAG, "addItemToUserAccount: $it")
+                            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
+
+                            db.collection(COLLECTION_NAME).document(userDocumentID)
+                                .collection(SUB_COLLECTION_NAME)
+                                .add(data)
+                                .addOnSuccessListener { docRef ->
+                                    Log.d(
+                                        TAG,
+                                        "addItemToUserAccount: Document added with ID ${docRef.id}"
+                                    )
+
+                                }.addOnFailureListener {
+                                    Log.e(TAG, "addItemToUserAccount: $it")
+                                }
+                        }
+                    }
                 }
+            }
 
         } catch (ex: Exception) {
             Log.e(TAG, "addUserToDB: ${ex.toString()}")
@@ -198,6 +221,8 @@ class UserRepository(private val context: Context) {
                             currentItem.isItemAvailable =
                                 documentChange.document.get(FIELD_ITEM_IS_AVAILABLE).toString()
                                     .toBoolean()
+                            currentItem.itemPic =
+                                documentChange.document.get(FIELD_ITEM_PIC).toString()
 
                             when (documentChange.type) {
                                 DocumentChange.Type.ADDED -> {
@@ -252,6 +277,7 @@ class UserRepository(private val context: Context) {
                             Log.d(TAG, "getAllSellerItems: $currentUser")
                             db.collection(COLLECTION_NAME).document(currentUser.id)
                                 .collection(SUB_COLLECTION_NAME)
+                                .orderBy(FIELD_ITEM_CREATION_TIME, Query.Direction.DESCENDING)
                                 .addSnapshotListener(EventListener { items, error ->
                                     if (error != null) {
                                         Log.e(
@@ -283,6 +309,9 @@ class UserRepository(private val context: Context) {
                                             currentItem.isItemAvailable =
                                                 documentChange.document.get(FIELD_ITEM_IS_AVAILABLE)
                                                     .toString().toBoolean()
+                                            currentItem.itemPic =
+                                                documentChange.document.get(FIELD_ITEM_PIC)
+                                                    .toString()
 
                                             Log.d(TAG, "getAllSellerItems: $currentItem")
                                             itemsArrayList.add(currentItem)
@@ -334,22 +363,29 @@ class UserRepository(private val context: Context) {
 
     // Update user details
     fun updateUserDetails(userID: String, phone: String, address: String, imageUri: Uri) {
-        try{
+        try {
             Log.d(TAG, "updateUserDetails: Starting update")
             storageRef = FirebaseStorage.getInstance().reference.child("Images")
             firebaseFirestore = FirebaseFirestore.getInstance()
             storageRef = storageRef.child(System.currentTimeMillis().toString())
-            imageUri?.let {
-                    it1 -> storageRef.putFile(it1).addOnCompleteListener { task ->
+            imageUri?.let { it1 ->
+                storageRef.putFile(it1).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         storageRef.downloadUrl.addOnSuccessListener { uri ->
                             db.collection(COLLECTION_NAME).document(userID)
-                                .update( FIELD_USER_PHONE, phone, FIELD_USER_ADDRESS, address, FIELD_PROFILE_PIC, uri.toString())
+                                .update(
+                                    FIELD_USER_PHONE,
+                                    phone,
+                                    FIELD_USER_ADDRESS,
+                                    address,
+                                    FIELD_PROFILE_PIC,
+                                    uri.toString()
+                                )
                                 .addOnSuccessListener {
                                     Log.d(TAG, "updateUserDetails: Updated successfully")
                                 }
                                 .addOnFailureListener {
-                                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                                    Log.e(TAG, "updateUserDetails: Update Failed")
                                 }
                         }
                     }
@@ -357,9 +393,8 @@ class UserRepository(private val context: Context) {
                 }
             }
 
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "updateUserDetails: Update failed", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "updateUserDetails: Update failed")
         }
     }
 

@@ -5,7 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.google.api.LogDescriptor
+import com.squareup.picasso.Picasso
 import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.OnItemClickListener
 import com.vickylee.yardsale.databinding.ItemBinding
@@ -59,6 +59,10 @@ class BuyerListAdapter(
             itemList.get(position),
             clickListener
         )
+
+        // load item pic to image view
+        val item = itemList.get(position)
+        Picasso.with(context).load(item.itemPic).into(holder.binding.imgItem)
     }
 
     // identifies total number of items
