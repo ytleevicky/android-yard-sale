@@ -65,15 +65,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_item_details" />
 
-    <Button
-        android:id="@+id/btn_add_fav"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/layout_button"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
-        android:text="Add to Favorite"
-        android:visibility="gone"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_item_details" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_item_details">
+
+        <Button
+            android:id="@+id/btn_add_fav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:text="Add to Favorite"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_item_details" />
+
+        <Button
+            android:id="@+id/btn_remove_fav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:text="Remove from Favorite"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_item_details" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_seller_info"
@@ -83,27 +103,28 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:visibility="gone"
+        android:layout_margin="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_add_fav" />
+        app:layout_constraintTop_toBottomOf="@id/layout_button" />
 
     <ImageView
-        android:visibility="gone"
         android:id="@+id/iv_phone"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
         android:src="@drawable/ic_phone"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_seller_info" />
 
     <TextView
-        android:visibility="gone"
         android:id="@+id/tv_phone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:text="123455677"
         android:textSize="20sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/iv_phone"
         app:layout_constraintStart_toEndOf="@+id/iv_phone"
         app:layout_constraintTop_toTopOf="@+id/iv_phone" />
@@ -130,7 +151,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/iv_location"
         app:layout_constraintStart_toEndOf="@+id/iv_location"
         app:layout_constraintTop_toTopOf="@+id/iv_location" />
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

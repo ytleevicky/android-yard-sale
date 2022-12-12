@@ -173,7 +173,6 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     }
 
     override fun onItemClicked(item: Item, position: Int) {
-        Toast.makeText(context, "${item.itemName} selected at position $position", Toast.LENGTH_SHORT).show()
         Log.d(TAG, "onItemClicked: ${item}")
         val action = if (userType == "Seller") {
             ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)

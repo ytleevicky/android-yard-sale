@@ -1,10 +1,8 @@
 package com.vickylee.yardsale.data
 
-import android.content.ClipDescription
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FieldValue
@@ -12,7 +10,6 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.HashMap
-import kotlin.math.log
 
 class UserRepository(private val context: Context) {
     //region Properties
@@ -32,6 +29,9 @@ class UserRepository(private val context: Context) {
     private val FIELD_ITEM_PRICE = "itemPrice"
     private val FIELD_ITEM_IS_AVAILABLE = "isItemAvailable"
     private val FIELD_ITEM_CREATION_TIME = "creation_time_ms"
+
+    private val SUB_COLLECTION_FAV = "favoriteItems"
+    private val FIELD_FAV_ITEM_ID = "favItemID"
 
     private lateinit var currentUser: User
 
@@ -105,6 +105,9 @@ class UserRepository(private val context: Context) {
                                 TAG,
                                 "searchUserWithEmail: User found: ${documentChange.document.id}",
                             )
+
+                            storeUserFavItemsToSharedPrefs(documentChange.document.id)
+
                             editor.commit()
                         }
                     } else {
@@ -177,10 +180,15 @@ class UserRepository(private val context: Context) {
 
                             currentItem.itemID = documentChange.document.id
                             currentItem.sellerID = userDocumentID
-                            currentItem.itemName = documentChange.document.get(FIELD_ITEM_NAME).toString()
-                            currentItem.itemPrice = documentChange.document.get(FIELD_ITEM_PRICE).toString().toDouble()
-                            currentItem.itemDescription = documentChange.document.get(FIELD_ITEM_DESCRIPTION).toString()
-                            currentItem.isItemAvailable = documentChange.document.get(FIELD_ITEM_IS_AVAILABLE).toString().toBoolean()
+                            currentItem.itemName =
+                                documentChange.document.get(FIELD_ITEM_NAME).toString()
+                            currentItem.itemPrice =
+                                documentChange.document.get(FIELD_ITEM_PRICE).toString().toDouble()
+                            currentItem.itemDescription =
+                                documentChange.document.get(FIELD_ITEM_DESCRIPTION).toString()
+                            currentItem.isItemAvailable =
+                                documentChange.document.get(FIELD_ITEM_IS_AVAILABLE).toString()
+                                    .toBoolean()
 
                             when (documentChange.type) {
                                 DocumentChange.Type.ADDED -> {
@@ -207,7 +215,6 @@ class UserRepository(private val context: Context) {
             Log.e(TAG, "getAllItemsInUserAccount: ${ex}")
         }
     }
-    //endregion
 
     // get all seller items list
     fun getAllSellerItems() {
@@ -216,12 +223,18 @@ class UserRepository(private val context: Context) {
                 .whereEqualTo(FIELD_USER_TYPE, "Seller")
                 .addSnapshotListener(EventListener { snapshot, error ->
                     if (error != null) {
-                        Log.e(TAG, "getAllSellerItems: Listening to collection documents FAILED ${error}", )
+                        Log.e(
+                            TAG,
+                            "getAllSellerItems: Listening to collection documents FAILED ${error}",
+                        )
                         return@EventListener
                     }
-                    
+
                     if (snapshot != null) {
-                        Log.d(TAG, "getAllSellerItems: recieved items ${snapshot.size()} Received the documents from collection ${snapshot}")
+                        Log.d(
+                            TAG,
+                            "getAllSellerItems: recieved items ${snapshot.size()} Received the documents from collection ${snapshot}"
+                        )
                         val itemsArrayList: MutableList<Item> = ArrayList<Item>()
                         for (documentChange in snapshot.documentChanges) {
                             val currentUser: User =
@@ -230,39 +243,53 @@ class UserRepository(private val context: Context) {
                             Log.d(TAG, "getAllSellerItems: $currentUser")
                             db.collection(COLLECTION_NAME).document(currentUser.id)
                                 .collection(SUB_COLLECTION_NAME)
-                                .addSnapshotListener(EventListener { items, error -> 
+                                .addSnapshotListener(EventListener { items, error ->
                                     if (error != null) {
-                                        Log.e(TAG, "getAllSellerItems: Listening to collection documents FAILED ${error}", )
+                                        Log.e(
+                                            TAG,
+                                            "getAllSellerItems: Listening to collection documents FAILED ${error}",
+                                        )
                                         return@EventListener
                                     }
-                                    
+
                                     if (items != null) {
-                                        Log.d(TAG, "getAllSellerItems: recieved items ${items.size()} Received the documents from collection ${items}")
+                                        Log.d(
+                                            TAG,
+                                            "getAllSellerItems: recieved items ${items.size()} Received the documents from collection ${items}"
+                                        )
                                         for (documentChange in items.documentChanges) {
-                                            val currentItem: Item = documentChange.document.toObject(Item::class.java)
+                                            val currentItem: Item =
+                                                documentChange.document.toObject(Item::class.java)
                                             currentItem.sellerID = currentUser.id
                                             currentItem.itemID = documentChange.document.id
-                                            currentItem.itemName = documentChange.document.get(FIELD_ITEM_NAME).toString()
-                                            currentItem.itemPrice = documentChange.document.get(FIELD_ITEM_PRICE).toString().toDouble()
-                                            currentItem.itemDescription = documentChange.document.get(FIELD_ITEM_DESCRIPTION).toString()
-                                            currentItem.isItemAvailable = documentChange.document.get(FIELD_ITEM_IS_AVAILABLE).toString().toBoolean()
+                                            currentItem.itemName =
+                                                documentChange.document.get(FIELD_ITEM_NAME)
+                                                    .toString()
+                                            currentItem.itemPrice =
+                                                documentChange.document.get(FIELD_ITEM_PRICE)
+                                                    .toString().toDouble()
+                                            currentItem.itemDescription =
+                                                documentChange.document.get(FIELD_ITEM_DESCRIPTION)
+                                                    .toString()
+                                            currentItem.isItemAvailable =
+                                                documentChange.document.get(FIELD_ITEM_IS_AVAILABLE)
+                                                    .toString().toBoolean()
 
                                             Log.d(TAG, "getAllSellerItems: $currentItem")
                                             itemsArrayList.add(currentItem)
                                         }
                                         allItemsForBuyer.postValue(itemsArrayList)
                                     }
-                                    
+
                                 })
-                            
-                            
+
+
                         }
                     }
-                    
+
                 })
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "getAllSellerItems: $ex", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "getAllSellerItems: $ex")
         }
     }
 
@@ -291,50 +318,47 @@ class UserRepository(private val context: Context) {
                 }
 
             })
-        }
-        catch (ex:Exception) {
-            Log.e(TAG, "getUserDetailsFromDB: Couldn't find user", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "getUserDetailsFromDB: Couldn't find user")
         }
 
     }
 
     // Update user details
     fun updateUserDetails(userID: String, phone: String, address: String) {
-        try{
+        try {
             db.collection(COLLECTION_NAME).document(userID)
-                .update( FIELD_USER_PHONE, phone, FIELD_USER_ADDRESS, address)
+                .update(FIELD_USER_PHONE, phone, FIELD_USER_ADDRESS, address)
                 .addOnSuccessListener {
                     Log.d(TAG, "updateUserDetails: Updated successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                    Log.e(TAG, "updateUserDetails: Update Failed")
                 }
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "updateUserDetails: Update failed", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "updateUserDetails: Update failed")
         }
     }
 
     // Change password
     fun changePassword(userID: String, newPassword: String) {
-        try{
+        try {
             db.collection(COLLECTION_NAME).document(userID)
                 .update(FIELD_USER_PASSWORD, newPassword)
                 .addOnSuccessListener {
                     Log.d(TAG, "updateUserDetails: Updated successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "updateUserDetails: Update Failed", )
+                    Log.e(TAG, "updateUserDetails: Update Failed")
                 }
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "updateUserDetails: Update failed", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "updateUserDetails: Update failed")
         }
     }
 
     // Delete Item from list
     fun deleteItem(userID: String, itemID: String) {
-        try{
+        try {
             db.collection(COLLECTION_NAME).document(userID)
                 .collection(SUB_COLLECTION_NAME)
                 .document(itemID)
@@ -343,17 +367,16 @@ class UserRepository(private val context: Context) {
                     Log.d(TAG, "deleteItem: deleted successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "deleteItem: delete Failed", )
+                    Log.e(TAG, "deleteItem: delete Failed")
                 }
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "deleteItem: delete failed", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "deleteItem: delete failed")
         }
     }
 
     // Update item availability status
     fun updateItemAvailability(userID: String, itemID: String, itemStatus: Boolean) {
-        try{
+        try {
             db.collection(COLLECTION_NAME).document(userID)
                 .collection(SUB_COLLECTION_NAME).document(itemID)
                 .update(FIELD_ITEM_IS_AVAILABLE, itemStatus)
@@ -361,31 +384,145 @@ class UserRepository(private val context: Context) {
                     Log.d(TAG, "updateItemAvailability: Updated successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "updateItemAvailability: Update Failed", )
+                    Log.e(TAG, "updateItemAvailability: Update Failed")
                 }
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "updateItemAvailability: Update failed", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "updateItemAvailability: Update failed")
         }
     }
 
     // Update item by seller
-
-    fun updateItem(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double) {
-        try{
+    fun updateItem(
+        userID: String,
+        itemID: String,
+        itemName: String,
+        itemDescription: String,
+        itemPrice: Double
+    ) {
+        try {
             db.collection(COLLECTION_NAME).document(userID)
                 .collection(SUB_COLLECTION_NAME).document(itemID)
-                .update(FIELD_ITEM_NAME, itemName, FIELD_ITEM_PRICE, itemPrice, FIELD_ITEM_DESCRIPTION, itemDescription)
+                .update(
+                    FIELD_ITEM_NAME,
+                    itemName,
+                    FIELD_ITEM_PRICE,
+                    itemPrice,
+                    FIELD_ITEM_DESCRIPTION,
+                    itemDescription
+                )
                 .addOnSuccessListener {
                     Log.d(TAG, "updateItem: Updated successfully")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "updateItem: Update Failed", )
+                    Log.e(TAG, "updateItem: Update Failed")
                 }
-        }
-        catch (ex: Exception) {
-            Log.e(TAG, "updateItem: Update failed", )
+        } catch (ex: Exception) {
+            Log.e(TAG, "updateItem: Update failed")
         }
     }
 
+    fun addItemToFavorites(itemID: String) {
+        try {
+            val data: MutableMap<String, Any> = HashMap()
+            data[FIELD_FAV_ITEM_ID] = itemID
+
+            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
+
+            db.collection(COLLECTION_NAME).document(userDocumentID)
+                .collection(SUB_COLLECTION_FAV)
+                .add(data)
+                .addOnSuccessListener { docRef ->
+                    Log.d(TAG, "addItemToFavorites: Document added with ID ${docRef.id}")
+                    storeUserFavItemsToSharedPrefs(userDocumentID)
+
+                }.addOnFailureListener {
+                    Log.e(TAG, "addItemToFavorites: $it")
+                }
+
+        } catch (ex: Exception) {
+            Log.e(TAG, "addItemToFavorites: ${ex.toString()}")
+        }
+    }
+
+    fun removeItemFromFavorites(removeItemID: String) {
+        val currentLoggedInUser = sharedPreference.getString("USER_DOC_ID", "")!!
+
+        try {
+            db.collection(COLLECTION_NAME)
+                .document(currentLoggedInUser)
+                .collection(SUB_COLLECTION_FAV)
+                .addSnapshotListener(EventListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e(
+                            TAG,
+                            "removeItemFromFavorites: Listening to collection documents FAILED ${error}",
+                        )
+                        return@EventListener
+                    }
+
+                    if (snapshot != null) {
+                        Log.d(
+                            TAG,
+                            "removeItemFromFavorites: recieved items ${snapshot.size()} Received the documents from collection ${snapshot}"
+                        )
+
+                        for (documentChange in snapshot.documentChanges) {
+                            val currentFavItem = documentChange.document
+
+                            if (currentFavItem.get(FIELD_FAV_ITEM_ID) == removeItemID) {
+                                db.collection(COLLECTION_NAME).document(currentLoggedInUser)
+                                    .collection(SUB_COLLECTION_FAV).document(currentFavItem.id)
+                                    .delete()
+                                    .addOnSuccessListener {
+                                        Log.d(TAG, "removeItemFromFavorites: delete successfully")
+
+                                        // refresh fav item list
+                                        storeUserFavItemsToSharedPrefs(currentLoggedInUser)
+
+                                    }.addOnFailureListener {
+                                        Log.d(TAG, "removeItemFromFavorites: delete failed")
+                                    }
+                            }
+
+                        }
+                    }
+
+                })
+        } catch (ex: Exception) {
+            Log.e(TAG, "removeItemFromFavorites: $ex")
+        }
+
+    }
+
+    fun storeUserFavItemsToSharedPrefs(userID: String) {
+        try {
+
+            val docRef =
+                db.collection(COLLECTION_NAME).document(userID).collection(SUB_COLLECTION_FAV)
+
+            docRef.addSnapshotListener(EventListener { snapshot, error ->
+                if (error != null) {
+                    Log.e(TAG, "getUserFavItems: Listening to collect documents FAILED $error")
+                    return@EventListener
+                }
+
+                if (snapshot != null) {
+                    val favItemList = mutableSetOf<String>()
+
+                    for (documentChange in snapshot.documentChanges) {
+                        val currentItem = documentChange.document
+                        val favItemID = currentItem.get("favItemID").toString()
+                        favItemList.add(favItemID)
+                    }
+
+                    editor.putStringSet("USER_FAV_ITEMS", favItemList).commit()
+                }
+
+            })
+        } catch (ex: Exception) {
+            Log.e(TAG, "getUserFavItems: Couldn't find user fav")
+        }
+    }
+
+    //endregion
 }

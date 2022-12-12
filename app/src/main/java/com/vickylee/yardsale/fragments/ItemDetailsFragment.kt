@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -18,7 +19,6 @@ import com.vickylee.yardsale.databinding.FragmentItemDetailsBinding
 import androidx.lifecycle.Observer
 
 
-
 class ItemDetailsFragment : Fragment() {
 
     val TAG = this.toString()
@@ -27,7 +27,7 @@ class ItemDetailsFragment : Fragment() {
     lateinit var userRepository: UserRepository
     private lateinit var prefs: SharedPreferences
     lateinit var userType: String
-    private val args:ItemDetailsFragmentArgs by navArgs()
+    private val args: ItemDetailsFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +39,8 @@ class ItemDetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        prefs = requireContext().getSharedPreferences("YARD_SALE_PREFS",
+        prefs = requireContext().getSharedPreferences(
+            "YARD_SALE_PREFS",
             AppCompatActivity.MODE_PRIVATE
         )
         _binding = FragmentItemDetailsBinding.inflate(inflater, container, false)
@@ -63,8 +64,7 @@ class ItemDetailsFragment : Fragment() {
             var itemStatus = args.item.isItemAvailable
             if (itemStatus) {
                 binding.btnItemStatus.setText("Mark Sold")
-            }
-            else {
+            } else {
                 binding.btnItemStatus.setText("Mark Available")
             }
             binding.btnItemStatus.setOnClickListener {
@@ -73,17 +73,37 @@ class ItemDetailsFragment : Fragment() {
                 if (userID != null) {
                     userRepository.updateItemAvailability(userID, args.item.itemID, itemStatus)
                 }
-                val action = ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
+                val action =
+                    ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
                 findNavController().navigate(action)
             }
 
             binding.ivEdit.setOnClickListener {
-                val action = ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment(args.item)
+                val action =
+                    ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment(args.item)
                 findNavController().navigate(action)
             }
-        }
-        else {
-            binding.btnAddFav.visibility = View.VISIBLE
+        } else {
+
+            val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
+
+            Log.e("userFavItemList", "userFavItemList: $userFavItemList")
+
+            // user currently has no favorite items
+            if (userFavItemList == null || userFavItemList.isEmpty()) {
+                binding.btnAddFav.visibility = View.VISIBLE
+                binding.btnRemoveFav.visibility = View.GONE
+
+            } else if (userFavItemList!!.size > 0) {
+                if (userFavItemList.contains(args.item.itemID)) {
+                    binding.btnAddFav.visibility = View.GONE
+                    binding.btnRemoveFav.visibility = View.VISIBLE
+                } else {
+                    binding.btnAddFav.visibility = View.VISIBLE
+                    binding.btnRemoveFav.visibility = View.GONE
+                }
+            }
+
             binding.tvSellerInfo.visibility = View.VISIBLE
             binding.ivPhone.visibility = View.VISIBLE
             binding.tvPhone.visibility = View.VISIBLE
@@ -98,7 +118,17 @@ class ItemDetailsFragment : Fragment() {
                 }
             })
 
-            //Todo:Add item to favorite list
+            binding.btnAddFav.setOnClickListener {
+                userRepository.addItemToFavorites(args.item.itemID)
+                Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT).show()
+            }
+
+            binding.btnRemoveFav.setOnClickListener {
+                userRepository.removeItemFromFavorites(args.item.itemID)
+                Toast.makeText(requireContext(), "Removed from favorite.", Toast.LENGTH_SHORT)
+                    .show()
+            }
+
         }
 
     }
