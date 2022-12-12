@@ -10,6 +10,6 @@ data class User (var id : String = UUID.randomUUID().toString(),
                  var address : String = "",
                  var password : String = "",
                  var userType : String = "",
-                 var profilePic: String = ""
-                 var favItems: ArrayList<String> = arrayListOf())
+                 var profilePic: String = "",
+                 var favItems: ArrayList<String> = arrayListOf()
 ){}
