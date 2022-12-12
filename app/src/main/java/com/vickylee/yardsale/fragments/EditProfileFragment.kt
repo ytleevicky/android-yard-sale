@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -16,9 +17,14 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.vickylee.yardsale.data.UserRepository
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 import com.vickylee.yardsale.databinding.FragmentEditProfileBinding
 
 
@@ -29,8 +35,7 @@ class EditProfileFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var prefs: SharedPreferences
     private lateinit var userRepository : UserRepository
-
-    private lateinit var launcher: ActivityResultLauncher<Intent>
+    private var imageUri: Uri? = null
 
     // Permission
     // request code
@@ -43,6 +48,7 @@ class EditProfileFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         userRepository = UserRepository(requireContext())
+
     }
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -80,8 +86,11 @@ class EditProfileFragment : Fragment() {
         binding.btnSave.setOnClickListener {
             val phone = binding.edtPhone.text.toString()
             val address = binding.edtLocation.text.toString()
+
+
             if (userID != null) {
-                updateUserDetailsInDB(userID, phone, address)
+                Log.d("TAG", "onViewCreated: Starting")
+                imageUri?.let { it1 -> updateUserDetailsInDB(userID, phone, address, it1) }
             }
             val action = EditProfileFragmentDirections.actionEditProfileFragmentToProfileFragment()
             findNavController().navigate(action)
@@ -98,11 +107,14 @@ class EditProfileFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        imageUri = data?.data!!
+        Log.d("TAG", "onActivityResult: imageUri: $imageUri")
         binding.ivProfilePic.setImageURI(data?.data)
     }
 
-    private fun updateUserDetailsInDB(userID: String, phone: String, address: String) {
-        userRepository.updateUserDetails(userID, phone, address)
+    private fun updateUserDetailsInDB(userID: String, phone: String, address: String, imageUri: Uri) {
+        Log.d("TAG", "onViewCreated: Starting2")
+        userRepository.updateUserDetails(userID, phone, address, imageUri)
     }
 
     private fun getUserDetailsFromDB(userID: String) {
@@ -111,6 +123,8 @@ class EditProfileFragment : Fragment() {
         userRepository.user.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
+                val imageView = binding.ivProfilePic
+                Picasso.with(context).load(it.profilePic).into(imageView)
                 binding.edtName.setText(it.name)
                 binding.edtEmail.setText(it.email)
                 binding.edtPhone.setText(it.phone)
