@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
+    android:padding="20dp"
     tools:context=".fragments.EditProfileFragment">
 
     <TextView
@@ -13,27 +13,48 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="Edit Profile"
-        android:textSize="25sp"
-        android:textStyle="bold"
+        android:textSize="27sp"
+        android:textColor="@color/ys_black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <ImageView
-        android:id="@+id/iv_profile_pic"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/ic_launcher_background"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_profile_pic"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:cardCornerRadius="60dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_title">
 
-    <TextView
-        android:id="@+id/tv_pick_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pick Image"
-        app:layout_constraintStart_toEndOf="@+id/iv_profile_pic"
-        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+        <ImageView
+            android:id="@+id/iv_profile_pic"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_profile"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.cardview.widget.CardView>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_edit_profile_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/ys_teal"
+            android:clickable="true"
+            android:contentDescription="Edit Profile Pic"
+            android:src="@drawable/ic_camera"
+            android:tooltipText="Edit Profile Pic"
+            app:fabCustomSize="40dp"
+            app:layout_constraintCircle="@id/cv_profile_pic"
+            app:layout_constraintCircleAngle="130"
+            app:layout_constraintCircleRadius="60dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
 
 
     <EditText
@@ -44,8 +65,9 @@
         android:hint="Name"
         android:inputType="text"
         android:textSize="20sp"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_profile_pic" />
+        app:layout_constraintTop_toBottomOf="@+id/cv_profile_pic" />
 
 
     <EditText
@@ -87,7 +109,7 @@
 
     <Button
         android:id="@+id/btn_save"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="SAVE"
         android:layout_marginTop="30dp"

@@ -70,7 +70,7 @@ class EditProfileFragment : Fragment() {
             getUserDetailsFromDB(userID)
         }
 
-        binding.tvPickImage.setOnClickListener {
+        binding.fabEditProfilePic.setOnClickListener {
             if (hasExternalStoragePermission()) {
                 selectPhoto()
             }
