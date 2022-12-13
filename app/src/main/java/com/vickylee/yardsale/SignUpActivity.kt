@@ -32,13 +32,11 @@ class SignUpActivity : AppCompatActivity() {
 
         binding.rdbBuyer.setOnClickListener {
             userType = binding.rdbBuyer.text.toString()
-            binding.tvUserAddress.visibility = View.GONE
             binding.edtUserAddress.visibility = View.GONE
         }
 
         binding.rdbSeller.setOnClickListener {
             userType = binding.rdbSeller.text.toString()
-            binding.tvUserAddress.visibility = View.VISIBLE
             binding.edtUserAddress.visibility = View.VISIBLE
         }
 
