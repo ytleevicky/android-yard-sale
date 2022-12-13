@@ -206,7 +206,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
     private fun educateUserToAllowCameraPermission() {
         val builder = AlertDialog.Builder(context)
-        builder.setMessage("In order to select photo from the photo gallery, please go to app setting and allow this app to access your photos and videos.")
+        builder.setMessage("In order to take photo, please go to app setting and allow this app to use your camera.")
             .setCancelable(false)
             .setPositiveButton("OK") { dialog, id ->
             }
@@ -217,7 +217,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
     private fun educateUserToAllowPhotoAccessPermission() {
         val builder = AlertDialog.Builder(context)
-        builder.setMessage("In order to take photo, please go to app setting and allow this app to use your camera.")
+        builder.setMessage("In order to select photo from the photo gallery, please go to app setting and allow this app to access your photos and videos.")
             .setCancelable(false)
             .setPositiveButton("OK") { dialog, id ->
             }
