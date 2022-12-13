@@ -11,7 +11,7 @@
         android:id="@+id/tv_item_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:text="Item name:"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:gravity="start"
         android:inputType="textMultiLine"
-        android:lines="4"
+        android:lines="3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_item_description" />
 
@@ -101,7 +101,7 @@
 
     <ImageView
         android:id="@+id/iv_item_pic"
-        android:layout_width="150dp"
+        android:layout_width="match_parent"
         android:layout_height="150dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/img_btn_camera" />

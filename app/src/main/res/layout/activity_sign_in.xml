@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:text="Sign In"
         android:textAlignment="center"
-        android:textSize="30sp"
+        android:textSize="27sp"
+        android:textColor="@color/ys_black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="parent"
@@ -26,6 +27,7 @@
         android:layout_height="wrap_content"
         android:hint="Email"
         android:inputType="textEmailAddress"
+        android:layout_marginTop="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_sign_in" />
 
@@ -35,6 +37,7 @@
         android:layout_height="wrap_content"
         android:hint="Password"
         android:inputType="textPassword"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/et_email" />
 
@@ -43,6 +46,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign In"
+        android:paddingVertical="8dp"
+        android:layout_marginTop="15dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/et_password" />
 
@@ -64,8 +69,9 @@
         android:background="?android:attr/selectableItemBackground"
         android:text="Don't have an account? Sign Up"
         android:textAllCaps="false"
-        android:textColor="#0000FF"
-        android:textSize="12sp"
+        android:textColor="@color/ys_teal"
+        android:textSize="13sp"
+        android:layout_marginTop="5dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/swt_remember" />
 

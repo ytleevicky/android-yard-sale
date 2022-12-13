@@ -61,7 +61,7 @@ class ItemDetailsFragment : Fragment() {
 
         if (userType == "Seller") {
             binding.btnItemStatus.visibility = View.VISIBLE
-            binding.ivEdit.visibility = View.VISIBLE
+            binding.fabEditItem.visibility = View.VISIBLE
             var itemStatus = args.item.isItemAvailable
             if (itemStatus) {
                 binding.btnItemStatus.setText("Mark Sold")
@@ -79,7 +79,7 @@ class ItemDetailsFragment : Fragment() {
                 findNavController().navigate(action)
             }
 
-            binding.ivEdit.setOnClickListener {
+            binding.fabEditItem.setOnClickListener {
                 val action =
                     ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment(args.item)
                 findNavController().navigate(action)

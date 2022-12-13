@@ -10,19 +10,12 @@
 
     <ImageView
         android:id="@+id/iv_item_pic"
-        android:layout_width="200dp"
+        android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:src="@drawable/ic_launcher_background"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_favorite"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/iv_edit"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_edit"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -31,9 +24,39 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:text="Item Name"
-        android:textSize="22sp"
+        android:textSize="25sp"
+        android:textColor="#0a0b0b"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/iv_item_pic" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_edit_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:backgroundTint="#0a0b0b"
+        android:clickable="true"
+        android:contentDescription="Edit Item"
+        android:src="@drawable/ic_edit"
+        android:tooltipText="Edit Item"
+        android:visibility="gone"
+        app:fabCustomSize="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_item_pic"
+        app:tint="@color/white" />
+
+    <TextView
+        android:id="@+id/tv_item_price_sign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="$"
+        android:textColor="#50949A"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_item_name" />
 
     <TextView
         android:id="@+id/tv_item_price"
@@ -41,8 +64,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="Item Price"
+        android:textColor="#50949A"
+        android:textStyle="bold"
+        android:layout_marginLeft="2dp"
         android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_item_price_sign"
         app:layout_constraintTop_toBottomOf="@+id/tv_item_name" />
 
     <TextView
@@ -57,9 +83,10 @@
 
     <Button
         android:id="@+id/btn_item_status"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="30dp"
+        android:paddingVertical="8dp"
         android:text="Mark Sold"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
@@ -75,9 +102,9 @@
 
         <Button
             android:id="@+id/btn_add_fav"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="30dp"
             android:text="Add to Favorite"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
@@ -85,9 +112,9 @@
 
         <Button
             android:id="@+id/btn_remove_fav"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="30dp"
             android:text="Remove from Favorite"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
