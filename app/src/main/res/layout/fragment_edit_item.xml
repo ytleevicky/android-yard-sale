@@ -7,27 +7,14 @@
     tools:context=".fragments.EditItemFragment"
     android:padding="20dp">
 
-    <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Edit item"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
 
     <TextView
         android:id="@+id/tv_item_name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Item name:"
-        android:layout_marginTop="20dp"
-         />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/edt_item_name"
@@ -56,7 +43,7 @@
         android:layout_height="wrap_content"
         android:gravity="start"
         android:inputType="textMultiLine"
-        android:lines="4"
+        android:lines="3"
         />
 
     <TextView
@@ -100,18 +87,25 @@
         />
 
     <ImageButton
-        android:id="@+id/img_btn_camera"
+        android:id="@+id/img_btn_photo_gallery"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_camera"
+        android:src="@drawable/ic_photo_gallery"
         />
+
+    <ImageView
+        android:id="@+id/iv_item_pic"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_btn_photo_gallery" />
 
     <Button
         android:id="@+id/btn_save_item"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/img_btn_camera"
+        app:layout_constraintTop_toBottomOf="@+id/iv_item_pic"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Save"

@@ -24,8 +24,7 @@ class ItemDetailsFragment : Fragment() {
     private val binding get() = _binding!!
     lateinit var userRepository: UserRepository
     private lateinit var prefs: SharedPreferences
-    lateinit var userType: String
-    private val args: ItemDetailsFragmentArgs by navArgs()
+    private lateinit var userType: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,86 +46,109 @@ class ItemDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         var userID = prefs.getString("USER_DOC_ID", "NA")
+        var itemID = prefs.getString("ITEM_ID", "NA")
+        var sellerID = prefs.getString("SELLER_ID", "NA")
         userType = prefs.getString("USER_TYPE", "NA").toString()
         Log.d(TAG.toString(), "onViewCreated: $userID")
+        if (userID != null) {
+            if (itemID != null) {
+                getItemDetails(userID, itemID)
+                if (userType == "Buyer") {
+                    binding.tvSellerInfo.visibility = View.VISIBLE
+                    binding.ivPhone.visibility = View.VISIBLE
+                    binding.tvPhone.visibility = View.VISIBLE
+                    binding.ivLocation.visibility = View.VISIBLE
+                    binding.tvLocation.visibility = View.VISIBLE
 
-        binding.tvItemName.text = args.item.itemName
-        binding.tvItemPrice.text = args.item.itemPrice.toString()
-        binding.tvItemDetails.text = args.item.itemDescription
-
-        val imageView = binding.ivItemPic
-        Picasso.with(context).load(args.item.itemPic).into(imageView)
-
-        if (userType == "Seller") {
-            binding.btnItemStatus.visibility = View.VISIBLE
-            binding.fabEditItem.visibility = View.VISIBLE
-            var itemStatus = args.item.isItemAvailable
-            if (itemStatus) {
-                binding.btnItemStatus.setText("Mark Sold")
-            } else {
-                binding.btnItemStatus.setText("Mark Available")
-            }
-            binding.btnItemStatus.setOnClickListener {
-                itemStatus = !itemStatus
-                Log.d(TAG, "onViewCreated: ${itemStatus} ${args.item.itemID}")
-                if (userID != null) {
-                    userRepository.updateItemAvailability(userID, args.item.itemID, itemStatus)
+                    if (sellerID != null) {
+                        userRepository.getUserDetailsFromDB(sellerID)
+                    }
+                    userRepository.user.observe(viewLifecycleOwner, Observer {
+                        if (it != null) {
+                            Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
+                            binding.tvPhone.text = it.phone
+                            binding.tvLocation.text = it.address
+                        }
+                    })
                 }
-                val action =
-                    ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
-                findNavController().navigate(action)
-            }
 
-            binding.fabEditItem.setOnClickListener {
-                val action =
-                    ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment(args.item)
-                findNavController().navigate(action)
-            }
-        } else {
-
-            val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
-
-            // user currently has no favorite items
-            if (userFavItemList == null || userFavItemList.isEmpty()) {
-                binding.btnAddFav.visibility = View.VISIBLE
-                binding.btnRemoveFav.visibility = View.GONE
-
-            } else if (userFavItemList!!.size > 0) {
-                if (userFavItemList.contains(args.item.itemID)) {
-                    binding.btnAddFav.visibility = View.GONE
-                    binding.btnRemoveFav.visibility = View.VISIBLE
-                } else {
-                    binding.btnAddFav.visibility = View.VISIBLE
-                    binding.btnRemoveFav.visibility = View.GONE
+                binding.btnAddFav.setOnClickListener {
+                    if (itemID != null) {
+                        userRepository.addItemToFavorites(itemID)
+                    }
+                    Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT).show()
                 }
-            }
 
-            binding.tvSellerInfo.visibility = View.VISIBLE
-            binding.ivPhone.visibility = View.VISIBLE
-            binding.tvPhone.visibility = View.VISIBLE
-            binding.ivLocation.visibility = View.VISIBLE
-            binding.tvLocation.visibility = View.VISIBLE
-            userRepository.getUserDetailsFromDB(args.item.sellerID)
-            userRepository.user.observe(viewLifecycleOwner, Observer {
-                if (it != null) {
-                    Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
-                    binding.tvPhone.text = it.phone
-                    binding.tvLocation.text = it.address
+                binding.btnRemoveFav.setOnClickListener {
+                    if (itemID != null) {
+                        userRepository.removeItemFromFavorites(itemID)
+                    }
+                    Toast.makeText(requireContext(), "Removed from favorite.", Toast.LENGTH_SHORT)
+                        .show()
                 }
-            })
-
-            binding.btnAddFav.setOnClickListener {
-                userRepository.addItemToFavorites(args.item.itemID)
-                Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT).show()
-            }
-
-            binding.btnRemoveFav.setOnClickListener {
-                userRepository.removeItemFromFavorites(args.item.itemID)
-                Toast.makeText(requireContext(), "Removed from favorite.", Toast.LENGTH_SHORT)
-                    .show()
             }
         }
+    }
+
+    private fun getItemDetails(userID: String, itemID: String) {
+        userRepository.getItemDetails(userID, itemID)
+        userRepository.item.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                binding.tvItemName.setText(it.itemName)
+                binding.tvItemDetails.setText(it.itemDescription)
+                binding.tvItemPrice.setText(it.itemPrice.toString())
+                val imageView = binding.ivItemPic
+                Picasso.with(context).load(it.itemPic).into(imageView)
+                if (userType == "Seller") {
+                    binding.btnItemStatus.visibility = View.VISIBLE
+                    binding.fabEditItem.visibility = View.VISIBLE
+                    var itemStatus = it.isItemAvailable
+                    if (itemStatus) {
+                        binding.btnItemStatus.setText("Mark Sold")
+                    } else {
+                        binding.btnItemStatus.setText("Mark Available")
+                    }
+                    binding.btnItemStatus.setOnClickListener {
+                        itemStatus = !itemStatus
+
+                        if (userID != null) {
+                            userRepository.updateItemAvailability(userID, itemID, itemStatus)
+                        }
+                        val action =
+                            ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
+                        findNavController().navigate(action)
+                    }
+
+                    binding.fabEditItem.setOnClickListener {
+                        val action =
+                            ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment()
+                        findNavController().navigate(action)
+                    }
+                }
+                else {
+
+                    val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
+
+                    // user currently has no favorite items
+                    if (userFavItemList == null || userFavItemList.isEmpty()) {
+                        binding.btnAddFav.visibility = View.VISIBLE
+                        binding.btnRemoveFav.visibility = View.GONE
+
+                    }
+                    else if (userFavItemList!!.size > 0) {
+                        if (userFavItemList.contains(itemID)) {
+                            binding.btnAddFav.visibility = View.GONE
+                            binding.btnRemoveFav.visibility = View.VISIBLE
+                        } else {
+                            binding.btnAddFav.visibility = View.VISIBLE
+                            binding.btnRemoveFav.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+        })
+
+
     }
 }
