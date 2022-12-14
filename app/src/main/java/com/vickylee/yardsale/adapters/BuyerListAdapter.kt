@@ -1,6 +1,7 @@
 package com.vickylee.yardsale.adapters
 
 import android.content.Context
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -32,8 +33,10 @@ class BuyerListAdapter(
             Log.d("TAG", "bind: ${currentItem.isItemAvailable}")
             if (currentItem.isItemAvailable) {
                 binding.tvItemStatus.setText("Available")
+                binding.tvItemStatus.setTextColor(Color.parseColor("#40984C"))
             } else {
                 binding.tvItemStatus.setText("Sold")
+                binding.tvItemStatus.setTextColor(Color.parseColor("#707070"))
             }
 
             itemView.setOnClickListener {

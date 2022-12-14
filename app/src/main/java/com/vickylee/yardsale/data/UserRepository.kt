@@ -459,10 +459,12 @@ class UserRepository(private val context: Context) {
                     if (currentItem != null) {
                         Log.d(TAG, "getItemDetails: $snapshot")
                         currentItem.itemID = snapshot.id
+                        currentItem.sellerID = userID
                         currentItem.itemName = snapshot.get(FIELD_ITEM_NAME).toString()
                         currentItem.itemPrice = snapshot.get(FIELD_ITEM_PRICE).toString().toDouble()
                         currentItem.itemDescription = snapshot.get(FIELD_ITEM_DESCRIPTION).toString()
                         currentItem.itemPic = snapshot.get(FIELD_ITEM_PIC).toString()
+                        currentItem.isItemAvailable = snapshot.get(FIELD_ITEM_IS_AVAILABLE).toString().toBoolean()
                     }
                     item.postValue(currentItem)
                 }

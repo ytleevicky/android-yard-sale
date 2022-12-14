@@ -13,6 +13,8 @@
         android:layout_height="120dp"
         android:layout_margin="8dp"
         android:contentDescription="Item Image"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
         android:src="@drawable/ic_launcher_background" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -48,7 +50,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Item status"
-            android:textColor="@color/ys_purple"
+            android:textColor="#40984C"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -60,6 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="Item Price"
+            android:textColor="@color/ys_purple"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
