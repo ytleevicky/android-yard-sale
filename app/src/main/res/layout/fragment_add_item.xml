@@ -82,13 +82,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/edt_item_price" />
 
-    <ImageButton
-        android:id="@+id/img_btn_camera"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_camera"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_photo" />
+<!--    <ImageButton-->
+<!--        android:id="@+id/img_btn_camera"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:src="@drawable/ic_camera"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/tv_photo" />-->
 
     <ImageButton
         android:id="@+id/img_btn_photo_gallery"
@@ -96,7 +96,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_photo_gallery"
         android:tooltipText="Add photo from gallery"
-        app:layout_constraintStart_toEndOf="@id/img_btn_camera"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_photo" />
 
     <ImageView
@@ -104,7 +104,7 @@
         android:layout_width="match_parent"
         android:layout_height="150dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/img_btn_camera" />
+        app:layout_constraintTop_toBottomOf="@id/img_btn_photo_gallery" />
 
     <TextView
         android:id="@+id/tv_error_msg"

@@ -84,26 +84,26 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             }
         }
 
-        binding.imgBtnCamera.setOnClickListener {
-
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.CAMERA),
-                1
-            )
-
-            if (hasCameraPermission()) {
-                // Navigate to Camera Preview Fragment
-                val action =
-                    AddItemFragmentDirections.actionAddItemFragmentToCameraPreviewFragment()
-                findNavController().navigate(action)
-            } else {
-                if (camera_cnt > 1) {
-                    educateUserToAllowCameraPermission()
-                }
-                camera_cnt++
-            }
-        }
+//        binding.imgBtnCamera.setOnClickListener {
+//
+//            ActivityCompat.requestPermissions(
+//                requireActivity(),
+//                arrayOf(Manifest.permission.CAMERA),
+//                1
+//            )
+//
+//            if (hasCameraPermission()) {
+//                // Navigate to Camera Preview Fragment
+//                val action =
+//                    AddItemFragmentDirections.actionAddItemFragmentToCameraPreviewFragment()
+//                findNavController().navigate(action)
+//            } else {
+//                if (camera_cnt > 1) {
+//                    educateUserToAllowCameraPermission()
+//                }
+//                camera_cnt++
+//            }
+//        }
 
         binding.imgBtnPhotoGallery.setOnClickListener {
 
