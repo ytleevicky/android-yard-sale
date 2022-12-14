@@ -17,7 +17,7 @@
     <!-- Yard Sale Color Theme -->
 
     <color name="ys_black">#0A0B0B</color>
-    <color name="ys_teal">#50949A</color>
+    <color name="ys_purple">#8752F9</color>
     <color name="ys_white">#F4F5F6</color>
 
 </resources>
