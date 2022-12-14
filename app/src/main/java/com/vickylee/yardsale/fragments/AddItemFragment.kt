@@ -84,26 +84,26 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             }
         }
 
-        binding.imgBtnCamera.setOnClickListener {
-
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.CAMERA),
-                1
-            )
-
-            if (hasCameraPermission()) {
-                // Navigate to Camera Preview Fragment
-                val action =
-                    AddItemFragmentDirections.actionAddItemFragmentToCameraPreviewFragment()
-                findNavController().navigate(action)
-            } else {
-                if (camera_cnt > 1) {
-                    educateUserToAllowCameraPermission()
-                }
-                camera_cnt++
-            }
-        }
+//        binding.imgBtnCamera.setOnClickListener {
+//
+//            ActivityCompat.requestPermissions(
+//                requireActivity(),
+//                arrayOf(Manifest.permission.CAMERA),
+//                1
+//            )
+//
+//            if (hasCameraPermission()) {
+//                // Navigate to Camera Preview Fragment
+//                val action =
+//                    AddItemFragmentDirections.actionAddItemFragmentToCameraPreviewFragment()
+//                findNavController().navigate(action)
+//            } else {
+//                if (camera_cnt > 1) {
+//                    educateUserToAllowCameraPermission()
+//                }
+//                camera_cnt++
+//            }
+//        }
 
         binding.imgBtnPhotoGallery.setOnClickListener {
 
@@ -200,7 +200,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         // returns true of the External storage permission is granted, and false otherwise
         return ContextCompat.checkSelfPermission(
             requireContext(),
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.READ_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
