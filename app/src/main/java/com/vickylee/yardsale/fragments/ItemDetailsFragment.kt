@@ -128,6 +128,7 @@ class ItemDetailsFragment : Fragment() {
         userRepository.getItemDetails(sellerID, itemID)
         userRepository.item.observe(viewLifecycleOwner, Observer {
             if (it != null) {
+                Log.d(TAG, "getItemDetails: $it")
                 binding.tvItemName.setText(it.itemName)
                 binding.tvItemDetails.setText(it.itemDescription)
                 binding.tvItemPrice.setText(it.itemPrice.toString())
