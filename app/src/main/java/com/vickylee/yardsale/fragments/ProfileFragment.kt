@@ -17,6 +17,7 @@ import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentProfileBinding
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -26,11 +27,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private val binding get() = _binding!!
     private lateinit var prefs: SharedPreferences
     private lateinit var userRepository : UserRepository
+    private lateinit var mAuth: FirebaseAuth
 
     //region Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         userRepository = UserRepository(requireContext())
+        mAuth = FirebaseAuth.getInstance()
     }
 
     override fun onCreateView(
@@ -87,6 +90,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 if (newPassword.text.toString() == confirmPassword.text.toString()) {
                     Log.d("TAG", "changePassword: Password matched")
                     userRepository.changePassword(userID, newPassword.text.toString())
+                    var user = mAuth.currentUser
+
+                    user?.updatePassword(newPassword.text.toString())?.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("TAG", "changePassword: Password updated")
+                        }
+                        else {
+                            Log.d("TAG", "changePassword: password not updated")
+                        }
+                    }
                 }
                 else {
                     confirmPassword.setError("Password didn't match with new password")

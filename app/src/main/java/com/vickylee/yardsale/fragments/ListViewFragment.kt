@@ -169,11 +169,14 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
     override fun onItemClicked(item: Item, position: Int) {
         Log.d(TAG, "onItemClicked: ${item}")
-        val action = if (userType == "Seller") {
-            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
-        } else {
-            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
-        }
+        prefs.edit().putString("ITEM_ID", item.itemID).apply()
+        prefs.edit().putString("SELLER_ID", item.sellerID).apply()
+        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
+//        val action = if (userType == "Seller") {
+//            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
+//        } else {
+//            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
+//        }
 
         findNavController().navigate(action)
     }

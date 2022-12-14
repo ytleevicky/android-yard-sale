@@ -63,9 +63,6 @@
         <action
             android:id="@+id/action_itemDetailsFragment_to_listViewFragment"
             app:destination="@id/listViewFragment" />
-        <argument
-            android:name="item"
-            app:argType="com.vickylee.yardsale.data.Item" />
         <action
             android:id="@+id/action_itemDetailsFragment_to_editItemFragment"
             app:destination="@id/editItemFragment" />
@@ -84,9 +81,6 @@
         android:name="com.vickylee.yardsale.fragments.EditItemFragment"
         android:label="fragment_edit_item"
         tools:layout="@layout/fragment_edit_item" >
-        <argument
-            android:name="item"
-            app:argType="com.vickylee.yardsale.data.Item" />
         <action
             android:id="@+id/action_editItemFragment_to_listViewFragment"
             app:destination="@id/listViewFragment" />

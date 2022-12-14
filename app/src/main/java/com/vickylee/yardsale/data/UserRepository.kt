@@ -42,6 +42,7 @@ class UserRepository(private val context: Context) {
     private lateinit var currentUser: User
 
     var user: MutableLiveData<User?> = MutableLiveData<User?>()
+    var item: MutableLiveData<Item?> = MutableLiveData<Item?>()
     var allItemsInUserAccount: MutableLiveData<List<Item>> = MutableLiveData<List<Item>>()
     var allItemsForBuyer: MutableLiveData<List<Item>> = MutableLiveData<List<Item>>()
 
@@ -347,6 +348,7 @@ class UserRepository(private val context: Context) {
                 if (snapshot != null) {
                     val currentUser: User = snapshot.toObject(User::class.java)!!
                     if (currentUser != null) {
+                        
                         currentUser.id = snapshot.id
                         currentUser.email = snapshot.get(FIELD_USER_EMAIL).toString()
                         currentUser.name = snapshot.get(FIELD_USER_NAME).toString()
@@ -440,13 +442,44 @@ class UserRepository(private val context: Context) {
         }
     }
 
+    fun getItemDetails(userID: String, itemID: String) {
+        try {
+            val docRef = db.collection(COLLECTION_NAME).document(userID)
+                .collection(SUB_COLLECTION_NAME).document(itemID)
+
+            docRef.addSnapshotListener(EventListener { snapshot, error ->
+                Log.d(TAG, "getItemDetails: $snapshot")
+                if (error != null) {
+                    Log.e(TAG, "getItemDetails: Listening to collect documents FAILED $error")
+                    return@EventListener
+                }
+
+                if (snapshot != null) {
+                    val currentItem: Item? = snapshot.toObject(Item::class.java)
+                    if (currentItem != null) {
+                        Log.d(TAG, "getItemDetails: $snapshot")
+                        currentItem.itemID = snapshot.id
+                        currentItem.itemName = snapshot.get(FIELD_ITEM_NAME).toString()
+                        currentItem.itemPrice = snapshot.get(FIELD_ITEM_PRICE).toString().toDouble()
+                        currentItem.itemDescription = snapshot.get(FIELD_ITEM_DESCRIPTION).toString()
+                        currentItem.itemPic = snapshot.get(FIELD_ITEM_PIC).toString()
+                    }
+                    item.postValue(currentItem)
+                }
+            })
+        } catch (ex: Exception) {
+            Log.e(TAG, "getItemDetails: Couldn't find user")
+        }
+    }
+
     // Update item by seller
     fun updateItem(
         userID: String,
         itemID: String,
         itemName: String,
         itemDescription: String,
-        itemPrice: Double
+        itemPrice: Double,
+        itemPic: String
     ) {
         try {
             db.collection(COLLECTION_NAME).document(userID)
@@ -457,7 +490,9 @@ class UserRepository(private val context: Context) {
                     FIELD_ITEM_PRICE,
                     itemPrice,
                     FIELD_ITEM_DESCRIPTION,
-                    itemDescription
+                    itemDescription,
+                    FIELD_ITEM_PIC,
+                    itemPic
                 )
                 .addOnSuccessListener {
                     Log.d(TAG, "updateItem: Updated successfully")
