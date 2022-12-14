@@ -200,7 +200,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         // returns true of the External storage permission is granted, and false otherwise
         return ContextCompat.checkSelfPermission(
             requireContext(),
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.READ_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
