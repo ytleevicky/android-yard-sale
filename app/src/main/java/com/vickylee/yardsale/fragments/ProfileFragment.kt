@@ -103,11 +103,26 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             if (it != null) {
                 Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
                 val imageView = binding.ivProfilePic
-                Picasso.with(context).load(it.profilePic).into(imageView)
+                if (it.profilePic != "") {
+                    Picasso.with(context).load(it.profilePic).into(imageView)
+                }
                 binding.tvName.text = it.name
                 binding.tvEmail.text = it.email
-                binding.tvPhone.text = it.phone
-                binding.tvLocation.text = it.address
+                if (it.phone != "") {
+                    binding.tvPhone.text = it.phone
+                }
+                else {
+                    binding.ivPhone.visibility = View.GONE
+                    binding.tvPhone.visibility = View.GONE
+                }
+                if (it.address != "") {
+                    binding.tvLocation.text = it.address
+                }
+                else {
+                    binding.ivLocation.visibility = View.GONE
+                    binding.tvLocation.visibility = View.GONE
+                }
+
             }
         })
     }
