@@ -171,12 +171,12 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         Log.d(TAG, "onItemClicked: ${item}")
         prefs.edit().putString("ITEM_ID", item.itemID).apply()
         prefs.edit().putString("SELLER_ID", item.sellerID).apply()
-        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
-//        val action = if (userType == "Seller") {
-//            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
-//        } else {
-//            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment(item)
-//        }
+//        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
+        val action = if (userType == "Seller") {
+            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
+        } else {
+            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
+        }
 
         findNavController().navigate(action)
     }
