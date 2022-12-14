@@ -3,6 +3,7 @@ package com.vickylee.yardsale.data
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
@@ -63,6 +64,7 @@ class UserRepository(private val context: Context) {
             data[FIELD_USER_ADDRESS] = newUser.address
             data[FIELD_USER_TYPE] = newUser.userType
             data[FIELD_USER_FAV_ITEMS] = arrayListOf<String>()
+            data[FIELD_PROFILE_PIC] = newUser.profilePic
 
             db.collection(COLLECTION_NAME).add(data).addOnSuccessListener { docRef ->
                 Log.d(TAG, "addUserToDB: Document added with ID ${docRef.id}")
@@ -362,36 +364,25 @@ class UserRepository(private val context: Context) {
     }
 
     // Update user details
-    fun updateUserDetails(userID: String, phone: String, address: String, imageUri: Uri) {
+    fun updateUserDetails(userID: String, phone: String, address: String, imageUrl: String) {
         try {
             Log.d(TAG, "updateUserDetails: Starting update")
-            storageRef = FirebaseStorage.getInstance().reference.child("Images")
-            firebaseFirestore = FirebaseFirestore.getInstance()
-            storageRef = storageRef.child(System.currentTimeMillis().toString())
-            imageUri?.let { it1 ->
-                storageRef.putFile(it1).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        storageRef.downloadUrl.addOnSuccessListener { uri ->
-                            db.collection(COLLECTION_NAME).document(userID)
-                                .update(
-                                    FIELD_USER_PHONE,
-                                    phone,
-                                    FIELD_USER_ADDRESS,
-                                    address,
-                                    FIELD_PROFILE_PIC,
-                                    uri.toString()
-                                )
-                                .addOnSuccessListener {
-                                    Log.d(TAG, "updateUserDetails: Updated successfully")
-                                }
-                                .addOnFailureListener {
-                                    Log.e(TAG, "updateUserDetails: Update Failed")
-                                }
-                        }
-                    }
-
+            db.collection(COLLECTION_NAME).document(userID)
+                .update(
+                    FIELD_USER_PHONE,
+                    phone,
+                    FIELD_USER_ADDRESS,
+                    address,
+                    FIELD_PROFILE_PIC,
+                    imageUrl
+                )
+                .addOnSuccessListener {
+                    Log.d(TAG, "updateUserDetails: Updated successfully")
+                    Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show()
                 }
-            }
+                .addOnFailureListener {
+                    Log.e(TAG, "updateUserDetails: Update Failed")
+                }
 
         } catch (ex: Exception) {
             Log.e(TAG, "updateUserDetails: Update failed")

@@ -20,7 +20,7 @@
         app:fabCustomSize="50dp"
         android:clickable="true"
         android:contentDescription="Add Item"
-        android:backgroundTint="@color/ys_black"
+        android:backgroundTint="@color/ys_purple"
         app:tint="@color/ys_white"
         android:src="@drawable/ic_add"
         android:layout_margin="30dp"
