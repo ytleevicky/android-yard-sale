@@ -1,6 +1,8 @@
 package com.vickylee.yardsale.fragments
 
+import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,13 +10,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentItemDetailsBinding
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 
 
 class ItemDetailsFragment : Fragment() {
@@ -51,9 +58,9 @@ class ItemDetailsFragment : Fragment() {
         var sellerID = prefs.getString("SELLER_ID", "NA")
         userType = prefs.getString("USER_TYPE", "NA").toString()
         Log.d(TAG.toString(), "onViewCreated: $userID")
-        if (userID != null) {
+        if (sellerID != null) {
             if (itemID != null) {
-                getItemDetails(userID, itemID)
+                getItemDetails(sellerID, itemID)
                 if (userType == "Buyer") {
                     binding.tvSellerInfo.visibility = View.VISIBLE
                     binding.ivPhone.visibility = View.VISIBLE
@@ -71,6 +78,32 @@ class ItemDetailsFragment : Fragment() {
                             binding.tvLocation.text = it.address
                         }
                     })
+
+                    binding.tvPhone.setOnClickListener {
+                        // get phone number
+                        val phoneNumberFromUI = binding.tvPhone.text.toString()
+
+                        //ask for confirmation
+                        val confirmDialog = AlertDialog.Builder(requireContext())
+                        confirmDialog.setTitle("Confirm")
+                        confirmDialog.setMessage("Are you sure you want to call this seller?")
+                        confirmDialog.setNegativeButton("Cancel") { dialogInterface, i ->
+                            dialogInterface.dismiss()
+                        }
+                        confirmDialog.setPositiveButton("Call") { dialogInterface, i ->
+                            val phoneNumAsUri: Uri = Uri.parse("tel: $phoneNumberFromUI")
+                            val intent: Intent = Intent(Intent.ACTION_DIAL, phoneNumAsUri)
+                            // 3. Start the activity
+                            if (intent.resolveActivity(requireActivity().packageManager) != null) {
+                                startActivity(intent)
+                            }
+                            else {
+                                Log.d("ARU", "Couldn't call this number")
+                            }
+                        }
+                        confirmDialog.show()
+
+                    }
                 }
 
                 binding.btnAddFav.setOnClickListener {
@@ -91,8 +124,8 @@ class ItemDetailsFragment : Fragment() {
         }
     }
 
-    private fun getItemDetails(userID: String, itemID: String) {
-        userRepository.getItemDetails(userID, itemID)
+    private fun getItemDetails(sellerID: String, itemID: String) {
+        userRepository.getItemDetails(sellerID, itemID)
         userRepository.item.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 binding.tvItemName.setText(it.itemName)
@@ -112,8 +145,8 @@ class ItemDetailsFragment : Fragment() {
                     binding.btnItemStatus.setOnClickListener {
                         itemStatus = !itemStatus
 
-                        if (userID != null) {
-                            userRepository.updateItemAvailability(userID, itemID, itemStatus)
+                        if (sellerID != null) {
+                            userRepository.updateItemAvailability(sellerID, itemID, itemStatus)
                         }
                         val action =
                             ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()

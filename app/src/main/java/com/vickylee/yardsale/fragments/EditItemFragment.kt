@@ -17,6 +17,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.UserRepository
@@ -31,6 +34,9 @@ class EditItemFragment : Fragment() {
     private lateinit var prefs: SharedPreferences
     private var imageUri: Uri? = null
     private var imageUrl: String = ""
+
+    private lateinit var storageRef: StorageReference
+    private lateinit var firebaseFirestore: FirebaseFirestore
 
     // Permission
     // request code
@@ -91,14 +97,9 @@ class EditItemFragment : Fragment() {
                 val itemPrice = binding.edtItemPrice.text.toString().toDouble()
                 if (validateUserInputData()) {
                     if (itemID != null) {
-                        if (imageUri != null) {
-                            userRepository.updateItem(userID, itemID, itemName, itemDescription, itemPrice, imageUri.toString())
-                        }
-                        else {
-                            userRepository.updateItem(userID, itemID, itemName, itemDescription, itemPrice, imageUrl)
-                        }
-
+                        updateData(userID, itemID, itemName, itemDescription, itemPrice)
                     }
+
                     val action = EditItemFragmentDirections.actionEditItemFragmentToListViewFragment()
                     findNavController().navigate(action)
                 }
@@ -151,6 +152,38 @@ class EditItemFragment : Fragment() {
         }
 
         return validateDataResult
+    }
+
+    private fun updateData(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double) {
+        if (userID != null) {
+
+            Log.d("TAG", "onViewCreated: Starting")
+            if (itemID != null) {
+                if (imageUri != null) {
+                    storeItemImage(userID, itemID, itemName, itemDescription, itemPrice, imageUri!!)
+                }
+                else {
+                    userRepository.updateItem(userID, itemID, itemName, itemDescription, itemPrice, imageUrl)
+                }
+
+            }
+        }
+    }
+
+    private fun storeItemImage(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double, imageUri: Uri) {
+        storageRef = FirebaseStorage.getInstance().reference.child("Images")
+        firebaseFirestore = FirebaseFirestore.getInstance()
+        storageRef = storageRef.child(System.currentTimeMillis().toString())
+        if (imageUri != null) {
+            storageRef.putFile(imageUri).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    storageRef.downloadUrl.addOnSuccessListener { uri ->
+                        userRepository.updateItem(userID, itemID, itemName, itemDescription, itemPrice, uri.toString())
+                    }
+                }
+
+            }
+        }
     }
 
     private fun hasExternalStoragePermission(): Boolean {
