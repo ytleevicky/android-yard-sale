@@ -75,12 +75,15 @@
         <action
             android:id="@+id/action_addFavoriteFragment_to_itemDetailsFragment"
             app:destination="@id/itemDetailsFragment" />
+        <action
+            android:id="@+id/action_addFavoriteFragment_to_listViewFragment"
+            app:destination="@id/listViewFragment" />
     </fragment>
     <fragment
         android:id="@+id/editItemFragment"
         android:name="com.vickylee.yardsale.fragments.EditItemFragment"
-        android:label="fragment_edit_item"
-        tools:layout="@layout/fragment_edit_item" >
+        android:label="@string/fragment_edit_item_details"
+        tools:layout="@layout/fragment_edit_item">
         <action
             android:id="@+id/action_editItemFragment_to_listViewFragment"
             app:destination="@id/listViewFragment" />

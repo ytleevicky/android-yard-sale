@@ -138,45 +138,69 @@ class UserRepository(private val context: Context) {
         itemName: String,
         itemDescription: String,
         itemPrice: Double,
-        itemPic: Uri
+        itemPic: String
     ) {
         try {
-            storageRef = FirebaseStorage.getInstance().reference.child("ItemImages")
-            firebaseFirestore = FirebaseFirestore.getInstance()
-            storageRef = storageRef.child(System.currentTimeMillis().toString())
+//            storageRef = FirebaseStorage.getInstance().reference.child("ItemImages")
+//            firebaseFirestore = FirebaseFirestore.getInstance()
+//            storageRef = storageRef.child(System.currentTimeMillis().toString())
+//
+//            itemPic?.let { it1 ->
+//                storageRef.putFile(it1).addOnCompleteListener { task ->
+//                    if (task.isSuccessful) {
+//                        storageRef.downloadUrl.addOnSuccessListener { uri ->
+//
+//                            val data: MutableMap<String, Any> = HashMap()
+//
+//                            data[FIELD_ITEM_NAME] = itemName
+//                            data[FIELD_ITEM_DESCRIPTION] = itemDescription
+//                            data[FIELD_ITEM_PRICE] = itemPrice
+//                            data[FIELD_ITEM_IS_AVAILABLE] = true
+//                            data[FIELD_ITEM_CREATION_TIME] = FieldValue.serverTimestamp()
+//                            data[FIELD_ITEM_PIC] = uri.toString()
+//
+//                            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
+//
+//                            db.collection(COLLECTION_NAME).document(userDocumentID)
+//                                .collection(SUB_COLLECTION_NAME)
+//                                .add(data)
+//                                .addOnSuccessListener { docRef ->
+//                                    Log.d(
+//                                        TAG,
+//                                        "addItemToUserAccount: Document added with ID ${docRef.id}"
+//                                    )
+//
+//                                }.addOnFailureListener {
+//                                    Log.e(TAG, "addItemToUserAccount: $it")
+//                                }
+//                        }
+//                    }
+//                }
+//            }
 
-            itemPic?.let { it1 ->
-                storageRef.putFile(it1).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        storageRef.downloadUrl.addOnSuccessListener { uri ->
+            val data: MutableMap<String, Any> = HashMap()
 
-                            val data: MutableMap<String, Any> = HashMap()
+            data[FIELD_ITEM_NAME] = itemName
+            data[FIELD_ITEM_DESCRIPTION] = itemDescription
+            data[FIELD_ITEM_PRICE] = itemPrice
+            data[FIELD_ITEM_IS_AVAILABLE] = true
+            data[FIELD_ITEM_CREATION_TIME] = FieldValue.serverTimestamp()
+            data[FIELD_ITEM_PIC] = itemPic
 
-                            data[FIELD_ITEM_NAME] = itemName
-                            data[FIELD_ITEM_DESCRIPTION] = itemDescription
-                            data[FIELD_ITEM_PRICE] = itemPrice
-                            data[FIELD_ITEM_IS_AVAILABLE] = true
-                            data[FIELD_ITEM_CREATION_TIME] = FieldValue.serverTimestamp()
-                            data[FIELD_ITEM_PIC] = uri.toString()
+            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
 
-                            val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
+            db.collection(COLLECTION_NAME).document(userDocumentID)
+                .collection(SUB_COLLECTION_NAME)
+                .add(data)
+                .addOnSuccessListener { docRef ->
+                    Log.d(
+                        TAG,
+                        "addItemToUserAccount: Document added with ID ${docRef.id}"
+                    )
 
-                            db.collection(COLLECTION_NAME).document(userDocumentID)
-                                .collection(SUB_COLLECTION_NAME)
-                                .add(data)
-                                .addOnSuccessListener { docRef ->
-                                    Log.d(
-                                        TAG,
-                                        "addItemToUserAccount: Document added with ID ${docRef.id}"
-                                    )
-
-                                }.addOnFailureListener {
-                                    Log.e(TAG, "addItemToUserAccount: $it")
-                                }
-                        }
-                    }
+                }.addOnFailureListener {
+                    Log.e(TAG, "addItemToUserAccount: $it")
                 }
-            }
 
         } catch (ex: Exception) {
             Log.e(TAG, "addUserToDB: ${ex.toString()}")
