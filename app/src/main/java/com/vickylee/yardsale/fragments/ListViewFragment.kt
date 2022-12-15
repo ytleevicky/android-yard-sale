@@ -66,6 +66,8 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         Log.d(TAG, "TEST - onViewCreated() is executing")
         var userID = prefs.getString("USER_DOC_ID", "NA")
         userType = prefs.getString("USER_TYPE", "NA").toString()
+
+        // SHow add button to seller and allow seller to delete item on swipe
         if (userType == "Seller") {
             binding.floatingActionButton.visibility = View.VISIBLE
             binding.floatingActionButton.setOnClickListener {
@@ -97,6 +99,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
             val helper = ItemTouchHelper(simpleCallback)
             helper.attachToRecyclerView(binding.rvItems)
         }
+        // For nuyer hide add button
         else {
             binding.floatingActionButton.visibility = View.GONE
         }
@@ -113,7 +116,6 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         else {
             userRepository.getAllSellerItems()
         }
-
 
         // recycler view
         itemAdapter = BuyerListAdapter(this.requireContext(), itemArrayList, this)
@@ -167,20 +169,15 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         _binding = null
     }
 
+    // Navigate to item details screen
     override fun onItemClicked(item: Item, position: Int) {
-        Log.d(TAG, "onItemClicked: ${item}")
         prefs.edit().putString("ITEM_ID", item.itemID).apply()
         prefs.edit().putString("SELLER_ID", item.sellerID).apply()
-//        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
-        val action = if (userType == "Seller") {
-            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
-        } else {
-            ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
-        }
-
+        val action = ListViewFragmentDirections.actionListViewFragmentToItemDetailsFragment()
         findNavController().navigate(action)
     }
 
+    // Ask for confirmation before deleting item
     private fun deleteItem(userId: String, position: Int) {
         Log.d(TAG, "deleteItem: Trying to delete item at position $position")
 

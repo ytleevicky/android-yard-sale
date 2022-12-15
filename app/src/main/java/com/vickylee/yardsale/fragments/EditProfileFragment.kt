@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.text.isDigitsOnly
 import com.vickylee.yardsale.data.UserRepository
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -38,6 +39,8 @@ class EditProfileFragment : Fragment() {
     private lateinit var userRepository : UserRepository
     private var imageUri: Uri? = null
     private var imageUrl: String = ""
+    private lateinit var userID: String
+    private lateinit var userType: String
 
     private lateinit var storageRef: StorageReference
     private lateinit var firebaseFirestore: FirebaseFirestore
@@ -69,13 +72,15 @@ class EditProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var userID = prefs.getString("USER_DOC_ID", "NA")
-        var userType = prefs.getString("USER_TYPE", "NA")
-        Log.d(TAG.toString(), "onViewCreated: $userID")
+        userID = prefs.getString("USER_DOC_ID", "NA").toString()
+        userType = prefs.getString("USER_TYPE", "NA").toString()
+
+        // Get user details from DB
         if (userID != null) {
             getUserDetailsFromDB(userID)
         }
 
+        // Pick profile picture from gallery
         binding.fabEditProfilePic.setOnClickListener {
             if (hasExternalStoragePermission()) {
                 selectPhoto()
@@ -89,105 +94,16 @@ class EditProfileFragment : Fragment() {
             }
         }
 
+        // Save edited profile
         binding.btnSave.setOnClickListener {
             val phone = binding.edtPhone.text.toString()
             val address = binding.edtLocation.text.toString()
-            if (userType == "Seller") {
-                if (userID != null) {
-                    validateData(userID, phone, address)
-                }
-            }
-            else {
-                if (userID != null) {
-                    updateData(userID, phone, address)
-                }
-            }
-
-//            val action = EditProfileFragmentDirections.actionEditProfileFragmentToProfileFragment()
-//            findNavController().navigate(action)
+            validateData(userID, phone, address)
         }
 
     }
 
-    private fun validateData(userID: String, phone: String, address: String) {
-        var validData = false
-
-        if (phone.isEmpty()) {
-            binding.edtPhone.error = "Phone number can not be empty"
-            validData = false
-        } else {
-            validData = true
-        }
-
-        if (address.isEmpty()) {
-            binding.edtLocation.error = "Address can not be empty"
-            validData = false
-        } else {
-            validData = true
-        }
-
-        if (validData) {
-            updateData(userID, phone, address)
-        }
-    }
-
-    private fun updateData(userID: String, phone: String, address: String) {
-        if (userID != null) {
-
-            Log.d("TAG", "onViewCreated: Starting")
-            if (imageUri != null) {
-                storeProfilePic(userID, imageUri!!, phone, address)
-            }
-            else if (imageUrl != ""){
-                updateUserDetailsInDB(userID, phone, address, imageUrl)
-            }
-            else {
-                updateUserDetailsInDB(userID, phone, address, "")
-            }
-        }
-    }
-
-    private fun storeProfilePic(userID: String, imageUri: Uri, phone: String, address: String) {
-        storageRef = FirebaseStorage.getInstance().reference.child("Images")
-        firebaseFirestore = FirebaseFirestore.getInstance()
-        storageRef = storageRef.child(System.currentTimeMillis().toString())
-        if (imageUri != null) {
-            storageRef.putFile(imageUri).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    storageRef.downloadUrl.addOnSuccessListener { uri ->
-                        updateUserDetailsInDB(userID, phone, address, uri.toString())
-                    }
-                }
-
-            }
-        }
-    }
-
-    @SuppressLint("IntentReset")
-    private fun selectPhoto() {
-        val pickFromGallery = Intent(Intent.ACTION_PICK)
-        pickFromGallery.type = "image/*"
-        startActivityForResult(pickFromGallery, 100)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (data != null) {
-            imageUri = data.data
-            Log.d("TAG", "onActivityResult: imageUri: $imageUri")
-            binding.ivProfilePic.setImageURI(imageUri)
-        }
-        else {
-            imageUri = null
-        }
-
-    }
-
-    private fun updateUserDetailsInDB(userID: String, phone: String, address: String, imageUrl: String) {
-        Log.d("TAG", "onViewCreated: Starting2")
-        userRepository.updateUserDetails(userID, phone, address, imageUrl)
-    }
-
+    // Get user details from DB
     private fun getUserDetailsFromDB(userID: String) {
         val userType = prefs.getString("USER_TYPE", "")
         userRepository.getUserDetailsFromDB(userID)
@@ -214,12 +130,109 @@ class EditProfileFragment : Fragment() {
         })
     }
 
+    // Ask user for storage permission
     private fun hasExternalStoragePermission(): Boolean {
         // returns true of the External storage permission is granted, and false otherwise
         return ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.READ_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // Select photo from gallery
+    @SuppressLint("IntentReset")
+    private fun selectPhoto() {
+        val pickFromGallery = Intent(Intent.ACTION_PICK)
+        pickFromGallery.type = "image/*"
+        startActivityForResult(pickFromGallery, 100)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (data != null) {
+            imageUri = data.data
+            Log.d("TAG", "onActivityResult: imageUri: $imageUri")
+            binding.ivProfilePic.setImageURI(imageUri)
+        }
+        else {
+            imageUri = null
+        }
+
+    }
+
+    // Validate user input
+    private fun validateData(userID: String, phone: String, address: String) {
+        var validData = false
+
+        // Validate phone number
+        if (phone.isEmpty()) {
+            binding.edtPhone.error = "Phone number can not be empty"
+            validData = false
+        }
+        else if (phone.length < 10) {
+            binding.edtPhone.error = "Phone number must be 10 digit"
+            validData = false
+        }
+        else {
+            validData = true
+        }
+
+        // Validate address for seller
+        if (userType == "Seller") {
+            if (address.isEmpty()) {
+                binding.edtLocation.error = "Address can not be empty"
+                validData = false
+            }
+            else if (address.isDigitsOnly()) {
+                binding.edtLocation.error = "Address can not be digits only"
+                validData = false
+            }
+            else {
+                validData = true
+            }
+        }
+
+        if (validData) {
+            validateImage(userID, phone, address)
+        }
+    }
+
+    // Validate image
+    private fun validateImage(userID: String, phone: String, address: String) {
+        if (userID != null) {
+            if (imageUri != null) {
+                storeProfilePic(userID, imageUri!!, phone, address)
+            }
+            else if (imageUrl != ""){
+                updateUserDetailsInDB(userID, phone, address, imageUrl)
+            }
+            else {
+                updateUserDetailsInDB(userID, phone, address, "")
+            }
+        }
+    }
+
+    // Store profile picture to firebase storage
+    private fun storeProfilePic(userID: String, imageUri: Uri, phone: String, address: String) {
+        storageRef = FirebaseStorage.getInstance().reference.child("Images")
+        firebaseFirestore = FirebaseFirestore.getInstance()
+        storageRef = storageRef.child(System.currentTimeMillis().toString())
+        if (imageUri != null) {
+            storageRef.putFile(imageUri).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    storageRef.downloadUrl.addOnSuccessListener { uri ->
+                        updateUserDetailsInDB(userID, phone, address, uri.toString())
+                    }
+                }
+
+            }
+        }
+    }
+
+    // Update data to DB
+    private fun updateUserDetailsInDB(userID: String, phone: String, address: String, imageUrl: String) {
+        Log.d("TAG", "onViewCreated: Starting2")
+        userRepository.updateUserDetails(userID, phone, address, imageUrl)
     }
 
     override fun onDestroyView() {

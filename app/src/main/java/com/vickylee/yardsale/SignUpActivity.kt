@@ -1,12 +1,15 @@
 package com.vickylee.yardsale
 
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.util.Patterns
 import android.view.View
 import android.widget.Toast
+import androidx.core.text.isDigitsOnly
 import com.google.android.material.tabs.TabLayout.TabGravity
 import com.google.firebase.auth.FirebaseAuth
 import com.vickylee.yardsale.data.User
@@ -66,7 +69,12 @@ class SignUpActivity : AppCompatActivity() {
         if (email.isEmpty()) {
             binding.edtEmail.error = "Email Id can not be empty"
             validData = false
-        } else {
+        }
+        else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.edtEmail.error = "Invalid email address"
+            validData = false
+        }
+        else {
             validData = true
         }
 
@@ -74,7 +82,12 @@ class SignUpActivity : AppCompatActivity() {
         if (password.isEmpty()) {
             binding.edtPwd.error = "Password can not be empty"
             validData = false
-        } else {
+        }
+        else if (password.length < 6) {
+            binding.edtPwd.error = "Password must contain 6 characters"
+            validData = false
+        }
+        else {
             validData = true
         }
 
@@ -90,7 +103,6 @@ class SignUpActivity : AppCompatActivity() {
             R.id.rdb_seller -> {
                 binding.tvUserTypeError.setText("")
                 userType = binding.rdbSeller.text.toString()
-
                 validData = true
             }
             else -> {
@@ -99,11 +111,40 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
+        //validate phone number
+        if (phone.isEmpty()) {
+            binding.edtPhone.setError("Phone number can not be empty")
+            validData = false
+        }
+        else if (phone.length < 10) {
+            binding.edtPhone.setError("Phone number must be 10 digits")
+            validData = false
+        }
+        else {
+            validData = true
+        }
+
+        // Validate address for seller
+        if (userType == "Seller") {
+            if (address.isEmpty()) {
+                binding.edtUserAddress.setError("Address can not be empty")
+                validData = false
+            }
+            else if (address.isDigitsOnly()) {
+                binding.edtUserAddress.setError("Address can not contain only digits")
+                validData = false
+            }
+            else {
+                validData = true
+            }
+        }
+
         if (validData) {
             signUp(name, email, password, phone, address, userType)
         }
     }
 
+    // Sign up with email
     private fun signUp(name: String, email: String, password: String, phone: String, address : String, userType: String) {
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->

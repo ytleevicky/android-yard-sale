@@ -84,6 +84,7 @@
             android:layout_height="wrap_content"
             android:text="Buyer"
             android:textSize="18sp"
+            android:textColor="#707070"
             android:layout_marginRight="10dp"
             />
 
@@ -92,6 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Seller"
+            android:textColor="#707070"
             android:textSize="18sp"
             />
     </RadioGroup>
