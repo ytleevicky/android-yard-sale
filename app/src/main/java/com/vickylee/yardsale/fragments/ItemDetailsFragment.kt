@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -21,6 +22,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
+import com.vickylee.yardsale.LoadingDialog
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -139,6 +144,7 @@ class ItemDetailsFragment : Fragment() {
                 if (userType == "Seller") {
                     binding.btnItemStatus.visibility = View.VISIBLE
                     binding.fabEditItem.visibility = View.VISIBLE
+                    binding.fabDeleteItem.visibility = View.VISIBLE
                     var itemStatus = it.isItemAvailable
                     if (itemStatus) {
                         binding.btnItemStatus.setText("Mark Sold")
@@ -164,6 +170,28 @@ class ItemDetailsFragment : Fragment() {
                             ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment()
                         findNavController().navigate(action)
                     }
+
+                    binding.fabDeleteItem.setOnClickListener {
+                        //ask for confirmation
+                        val confirmDialog = AlertDialog.Builder(requireContext())
+                        confirmDialog.setTitle("Delete")
+                        confirmDialog.setMessage("Are you sure you want to delete this item?")
+                        confirmDialog.setNegativeButton("Cancel") { dialogInterface, i ->
+                            dialogInterface.dismiss()
+                        }
+                        confirmDialog.setPositiveButton("Yes") { dialogInterface, i ->
+                            displayLoadingDialog(1500)
+                            GlobalScope.async {
+                                delay(1500)
+                                userRepository.deleteItem(sellerID, itemID)
+                                val action =
+                                    ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
+                                findNavController().navigate(action)
+                            }
+                        }
+                        confirmDialog.show()
+
+                    }
                 }
                 else {
                     val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
@@ -186,5 +214,16 @@ class ItemDetailsFragment : Fragment() {
                 }
             }
         })
+    }
+
+    fun displayLoadingDialog(duration: Long) {
+        val loading = LoadingDialog(requireActivity())
+        loading.startLoading("Deleting Item")
+        val handler = Handler()
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                loading.isDimiss()
+            }
+        }, duration)
     }
 }

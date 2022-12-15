@@ -2,6 +2,7 @@ package com.vickylee.yardsale.fragments
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -17,12 +18,16 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.vickylee.yardsale.LoadingDialog
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.adapters.BuyerListAdapter
 import com.vickylee.yardsale.data.Item
 import com.vickylee.yardsale.data.OnItemClickListener
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentListViewBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClickListener {
@@ -75,29 +80,29 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
                 val action = ListViewFragmentDirections.actionListViewFragmentToAddItemFragment()
                 findNavController().navigate(action)
             }
-            val simpleCallback: ItemTouchHelper.SimpleCallback =
-                object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-                    override fun onMove(
-                        recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder,
-                        target: RecyclerView.ViewHolder
-                    ): Boolean {
-                        return false
-                    }
+//            val simpleCallback: ItemTouchHelper.SimpleCallback =
+//                object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+//                    override fun onMove(
+//                        recyclerView: RecyclerView,
+//                        viewHolder: RecyclerView.ViewHolder,
+//                        target: RecyclerView.ViewHolder
+//                    ): Boolean {
+//                        return false
+//                    }
+//
+//                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+//                        if (direction == ItemTouchHelper.LEFT) {
+//                            //delete the current item from DB
+//                            Log.d(TAG,"onSwiped: trying to delete item : " + viewHolder.adapterPosition)
+//                            if (userID != null) {
+//                                deleteItem(userID, viewHolder.adapterPosition)
+//                            }
+//                        }
+//                    }
+//                }
 
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                        if (direction == ItemTouchHelper.LEFT) {
-                            //delete the current item from DB
-                            Log.d(TAG,"onSwiped: trying to delete item : " + viewHolder.adapterPosition)
-                            if (userID != null) {
-                                deleteItem(userID, viewHolder.adapterPosition)
-                            }
-                        }
-                    }
-                }
-
-            val helper = ItemTouchHelper(simpleCallback)
-            helper.attachToRecyclerView(binding.rvItems)
+//            val helper = ItemTouchHelper(simpleCallback)
+//            helper.attachToRecyclerView(binding.rvItems)
         }
         // For nuyer hide add button
         else {
@@ -108,46 +113,53 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "TEST - onStart() is executing")
-        itemArrayList = ArrayList()
-        Log.d(TAG, "onStart: $userType")
-        if (userType == "Seller") {
-            userRepository.getAllItemsInSellerAccount()
-        }
-        else {
-            userRepository.getAllSellerItems()
-        }
 
+        Log.d(TAG, "onStart: $userType")
+//        if (userType == "Seller") {
+//            userRepository.getAllItemsInSellerAccount()
+//        }
+//        else {
+//            userRepository.getAllSellerItems()
+//        }
+        itemArrayList = ArrayList()
         // recycler view
         itemAdapter = BuyerListAdapter(this.requireContext(), itemArrayList, this)
         binding.rvItems.layoutManager = LinearLayoutManager(this.requireContext())
         binding.rvItems.adapter = itemAdapter
+
+
 
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume() is executing now... ")
+        Log.d(TAG, "onResume: after adding")
         if (userType == "Seller") {
             userRepository.getAllItemsInSellerAccount()
+            //itemArrayList.clear()
             userRepository.allItemsInUserAccount.observe(this, Observer { itemList ->
                 Log.d(TAG, "onResume: Size - ${itemList.size}")
-                itemArrayList.clear()
+                //itemArrayList.clear()
 
                 if (itemList != null) {
+                    itemArrayList.clear()
                     for (item in itemList) {
                         itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp, itemPic = item.itemPic))
                         Log.d(TAG, "onResume: $item")
-                        itemAdapter?.notifyDataSetChanged()
                     }
+                    itemAdapter?.notifyDataSetChanged()
+                }
+                else {
+                    itemArrayList.clear()
                 }
             })
         }
         else {
             userRepository.getAllSellerItems()
             userRepository.allItemsForBuyer.observe(this, Observer { itemList ->
-                itemArrayList.clear()
-
                 if (itemList != null) {
+                    itemArrayList.clear()
                     for (item in itemList) {
                         itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp, itemPic = item.itemPic))
                         itemAdapter?.notifyDataSetChanged()
@@ -159,6 +171,7 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
 
     }
 
+    
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause() is executing now... ")
@@ -192,11 +205,15 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
         confirmDialog.setPositiveButton("Yes") { dialogInterface, i ->
             Log.d(TAG, "deleteItem: ${userRepository.allItemsInUserAccount.value!!.get(position).itemID}")
             //delete from database
-            lifecycleScope.launch {
-                userRepository.deleteItem(userId, userRepository.allItemsInUserAccount.value!!.get(position).itemID)
-                itemArrayList!!.removeAt(position)
-                itemAdapter?.notifyDataSetChanged()
-            }
+            //displayLoadingDialog(1500)
+            itemArrayList!!.removeAt(position)
+            Log.d(TAG, "deleteItem: itemArrayList after delete $itemArrayList")
+            itemAdapter?.notifyDataSetChanged()
+            userRepository.deleteItem(userId, userRepository.allItemsInUserAccount.value!!.get(position).itemID)
+//            lifecycleScope.launch {
+//
+//
+//            }
         }
         confirmDialog.show()
     }

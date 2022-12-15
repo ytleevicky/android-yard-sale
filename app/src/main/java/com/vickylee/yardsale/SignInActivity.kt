@@ -178,7 +178,7 @@ class SignInActivity : AppCompatActivity() {
 
     fun displayLoadingDialog(duration: Long) {
         val loading = LoadingDialog(this)
-        loading.startLoading()
+        loading.startLoading("Signing In")
         val handler = Handler()
         handler.postDelayed(object : Runnable {
             override fun run() {

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +16,19 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.vickylee.yardsale.LoadingDialog
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentAddItemBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
@@ -28,6 +38,9 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
     private val binding get() = _binding!!
     lateinit var userRepository: UserRepository
     private var imageUri: Uri? = null
+
+    private lateinit var storageRef: StorageReference
+    private lateinit var firebaseFirestore: FirebaseFirestore
 
     companion object {
         // To track number of the permission request shown to user
@@ -67,17 +80,16 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 val itemName = binding.edtItemName.text.toString()
                 val itemDescription = binding.edtItemDescription.text.toString()
                 val itemPrice = binding.edtItemPrice.text.toString().toDouble()
+                storeItemImage(itemName, itemDescription, itemPrice, imageUri!!)
+                displayLoadingDialog(1500)
 
-                userRepository.addItemToUserAccount(
-                    itemName,
-                    itemDescription,
-                    itemPrice,
-                    imageUri!!
-                )
-
+                GlobalScope.async {
+                    delay(1500)
+                }
                 Toast.makeText(context, "New item has been added to the list", Toast.LENGTH_SHORT)
                     .show()
                 resetInputField()
+
 
             } else {
                 Toast.makeText(context, "Please provide correct inputs", Toast.LENGTH_SHORT).show()
@@ -120,6 +132,23 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                     educateUserToAllowPhotoAccessPermission()
                 }
                 photoGallery_cnt++
+            }
+        }
+    }
+
+    private fun storeItemImage(itemName: String, itemDescription: String, itemPrice: Double, imageUri: Uri) {
+        storageRef = FirebaseStorage.getInstance().reference.child("Images")
+        firebaseFirestore = FirebaseFirestore.getInstance()
+        storageRef = storageRef.child(System.currentTimeMillis().toString())
+
+        if (imageUri != null) {
+            storageRef.putFile(imageUri).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    storageRef.downloadUrl.addOnSuccessListener { uri ->
+                        userRepository.addItemToUserAccount(itemName, itemDescription, itemPrice, uri.toString())
+                    }
+                }
+
             }
         }
     }
@@ -226,6 +255,17 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         alert.show()
     }
     //endregion
+
+    fun displayLoadingDialog(duration: Long) {
+        val loading = LoadingDialog(requireActivity())
+        loading.startLoading("Adding item")
+        val handler = Handler()
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                loading.isDimiss()
+            }
+        }, duration)
+    }
 
     //region Helper Function - Image View
     @SuppressLint("IntentReset")
