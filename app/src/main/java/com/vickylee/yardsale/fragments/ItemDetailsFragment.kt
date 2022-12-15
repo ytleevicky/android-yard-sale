@@ -181,13 +181,13 @@ class ItemDetailsFragment : Fragment() {
                         }
                         confirmDialog.setPositiveButton("Yes") { dialogInterface, i ->
                             displayLoadingDialog(1500)
+                            userRepository.deleteItem(sellerID, itemID)
                             GlobalScope.async {
                                 delay(1500)
-                                userRepository.deleteItem(sellerID, itemID)
-                                val action =
-                                    ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
-                                findNavController().navigate(action)
                             }
+                            val action =
+                                ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
+                            findNavController().navigate(action)
                         }
                         confirmDialog.show()
 

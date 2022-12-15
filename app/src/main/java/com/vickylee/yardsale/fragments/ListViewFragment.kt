@@ -162,8 +162,9 @@ class ListViewFragment : DialogFragment(R.layout.fragment_list_view), OnItemClic
                     itemArrayList.clear()
                     for (item in itemList) {
                         itemArrayList.add(Item(sellerID = item.sellerID, itemID= item.itemID, itemName = item.itemName, itemDescription = item.itemDescription, itemPrice = item.itemPrice, isItemAvailable = item.isItemAvailable, creationTimestamp = item.creationTimestamp, itemPic = item.itemPic))
-                        itemAdapter?.notifyDataSetChanged()
+
                     }
+                    itemAdapter?.notifyDataSetChanged()
                 }
             })
         }
