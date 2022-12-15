@@ -174,6 +174,7 @@ class SignInActivity : AppCompatActivity() {
         val prefs = applicationContext.getSharedPreferences("YARD_SALE_PREFS", MODE_PRIVATE)
         prefs.edit().putString("USER_EMAIL", email).apply()
         prefs.edit().putString("USER_PASSWORD", password).apply()
+        prefs.edit().putStringSet("USER_FAV_ITEMS", null).apply()
     }
 
     fun displayLoadingDialog(duration: Long) {

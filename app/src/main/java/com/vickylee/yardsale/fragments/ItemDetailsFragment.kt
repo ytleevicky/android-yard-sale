@@ -117,6 +117,7 @@ class ItemDetailsFragment : Fragment() {
                     if (itemID != null) {
                         userRepository.addItemToFavorites(itemID)
                     }
+
                     Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT)
                         .show()
                 }
