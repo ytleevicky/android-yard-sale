@@ -57,28 +57,28 @@ class ItemDetailsFragment : Fragment() {
         var itemID = prefs.getString("ITEM_ID", "NA")
         var sellerID = prefs.getString("SELLER_ID", "NA")
         userType = prefs.getString("USER_TYPE", "NA").toString()
-        Log.d(TAG.toString(), "onViewCreated: $userID")
+
+        // Get item details fom DB
         if (sellerID != null) {
             if (itemID != null) {
                 getItemDetails(sellerID, itemID)
+
+                // Show seller info only to buyer
                 if (userType == "Buyer") {
                     binding.tvSellerInfo.visibility = View.VISIBLE
                     binding.ivPhone.visibility = View.VISIBLE
                     binding.tvPhone.visibility = View.VISIBLE
                     binding.ivLocation.visibility = View.VISIBLE
                     binding.tvLocation.visibility = View.VISIBLE
-
-                    if (sellerID != null) {
-                        userRepository.getUserDetailsFromDB(sellerID)
-                    }
+                    userRepository.getUserDetailsFromDB(sellerID)
                     userRepository.user.observe(viewLifecycleOwner, Observer {
                         if (it != null) {
-                            Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
                             binding.tvPhone.text = it.phone
                             binding.tvLocation.text = it.address
                         }
                     })
 
+                    // Allow buyer to call the seller
                     binding.tvPhone.setOnClickListener {
                         // get phone number
                         val phoneNumberFromUI = binding.tvPhone.text.toString()
@@ -92,20 +92,19 @@ class ItemDetailsFragment : Fragment() {
                         }
                         confirmDialog.setPositiveButton("Call") { dialogInterface, i ->
                             val phoneNumAsUri: Uri = Uri.parse("tel: $phoneNumberFromUI")
-                            val intent: Intent = Intent(Intent.ACTION_DIAL, phoneNumAsUri)
-                            // 3. Start the activity
+                            val intent = Intent(Intent.ACTION_DIAL, phoneNumAsUri)
                             if (intent.resolveActivity(requireActivity().packageManager) != null) {
                                 startActivity(intent)
                             }
                             else {
-                                Log.d("ARU", "Couldn't call this number")
+                                Toast.makeText(context, "Couldn't call this number", Toast.LENGTH_SHORT).show()
                             }
                         }
                         confirmDialog.show()
-
                     }
                 }
 
+                // Add item to favorites for buyer
                 binding.btnAddFav.setOnClickListener {
                     if (itemID != null) {
                         userRepository.addItemToFavorites(itemID)
@@ -113,6 +112,7 @@ class ItemDetailsFragment : Fragment() {
                     Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT).show()
                 }
 
+                // Remove from favorite for buyer
                 binding.btnRemoveFav.setOnClickListener {
                     if (itemID != null) {
                         userRepository.removeItemFromFavorites(itemID)
@@ -124,16 +124,18 @@ class ItemDetailsFragment : Fragment() {
         }
     }
 
+    // Get item details from DB
     private fun getItemDetails(sellerID: String, itemID: String) {
         userRepository.getItemDetails(sellerID, itemID)
         userRepository.item.observe(viewLifecycleOwner, Observer {
             if (it != null) {
-                Log.d(TAG, "getItemDetails: $it")
                 binding.tvItemName.setText(it.itemName)
                 binding.tvItemDetails.setText(it.itemDescription)
                 binding.tvItemPrice.setText(it.itemPrice.toString())
                 val imageView = binding.ivItemPic
                 Picasso.with(context).load(it.itemPic).into(imageView)
+
+                // If the user is seller then show mark sold button
                 if (userType == "Seller") {
                     binding.btnItemStatus.visibility = View.VISIBLE
                     binding.fabEditItem.visibility = View.VISIBLE
@@ -143,6 +145,8 @@ class ItemDetailsFragment : Fragment() {
                     } else {
                         binding.btnItemStatus.setText("Mark Available")
                     }
+
+                    // Allow seller to mark item as sold
                     binding.btnItemStatus.setOnClickListener {
                         itemStatus = !itemStatus
 
@@ -154,6 +158,7 @@ class ItemDetailsFragment : Fragment() {
                         findNavController().navigate(action)
                     }
 
+                    // Go to edit item screen
                     binding.fabEditItem.setOnClickListener {
                         val action =
                             ItemDetailsFragmentDirections.actionItemDetailsFragmentToEditItemFragment()
@@ -161,7 +166,6 @@ class ItemDetailsFragment : Fragment() {
                     }
                 }
                 else {
-
                     val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
 
                     // user currently has no favorite items
@@ -182,7 +186,5 @@ class ItemDetailsFragment : Fragment() {
                 }
             }
         })
-
-
     }
 }

@@ -1,5 +1,6 @@
 package com.vickylee.yardsale.fragments
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
@@ -8,9 +9,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.UserRepository
@@ -19,6 +22,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
+import com.vickylee.yardsale.SignInActivity
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -51,17 +55,20 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         var userID = prefs.getString("USER_DOC_ID", "NA")
-        Log.d(TAG.toString(), "onViewCreated: $userID")
+
+        // Get user details from database
         if (userID != null) {
             getUserDetailsFromDB(userID)
         }
 
+        // Start edit profile fragment
         binding.btnEditProfile.setOnClickListener {
             // navigate to edit profile fragment
             val action = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
             findNavController().navigate(action)
         }
 
+        // Change password
         binding.tvChangePassword.setOnClickListener {
             if (userID != null) {
                 changePassword(userID)
@@ -72,49 +79,63 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private fun changePassword(userID: String) {
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.change_password, null)
-        var currentPassword = dialogView.findViewById<EditText>(R.id.edt_cur_pwd)
-        userRepository.getUserDetailsFromDB(userID)
-        userRepository.user.observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
-                currentPassword.setText(it.password)
+        val currentPassword = dialogView.findViewById<EditText>(R.id.edt_cur_pwd)
+        val newPassword = dialogView.findViewById<EditText>(R.id.edt_new_pwd)
+        val confirmPassword = dialogView.findViewById<EditText>(R.id.edt_cnf_pwd)
+        val passwordFromPrefs = prefs.getString("USER_PASSWORD", "NA")
+
+        // Check if user inputs current password correctly
+        currentPassword.doOnTextChanged { text, start, before, count ->
+            if (currentPassword.text.toString() != passwordFromPrefs) {
+                currentPassword.setError("Current password didn't match")
             }
-        })
+        }
+
+        // Check if new and confirm password matches
+        confirmPassword.doOnTextChanged { text, start, before, count ->
+            if (newPassword.text.toString() != confirmPassword.text.toString()) {
+                confirmPassword.setError("Password didn't match with new password")
+            }
+        }
+
+        // Show dialog
         val editDialog = AlertDialog.Builder(requireContext())
             .setTitle("Change Password")
             .setView(dialogView)
             .setPositiveButton("Update") { dialog, which ->
-                val newPassword = dialogView.findViewById<EditText>(R.id.edt_new_pwd)
-                val confirmPassword = dialogView.findViewById<EditText>(R.id.edt_cnf_pwd)
-
                 if (newPassword.text.toString() == confirmPassword.text.toString()) {
-                    Log.d("TAG", "changePassword: Password matched")
                     userRepository.changePassword(userID, newPassword.text.toString())
                     var user = mAuth.currentUser
 
                     user?.updatePassword(newPassword.text.toString())?.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            Log.d("TAG", "changePassword: Password updated")
+                            Toast.makeText(context, "Password changed successfully!", Toast.LENGTH_SHORT).show()
                         }
                         else {
-                            Log.d("TAG", "changePassword: password not updated")
+                            Toast.makeText(context, "Couldn't change password, try again!", Toast.LENGTH_SHORT).show()
                         }
                     }
+
+                    val intent = Intent(requireActivity(), SignInActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
                 }
                 else {
-                    confirmPassword.setError("Password didn't match with new password")
+                    Toast.makeText(context, "Couldn't change password, try again!", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
             .create()
         editDialog.show()
     }
 
+    // Get user details from db
     private fun getUserDetailsFromDB(userID: String) {
         userRepository.getUserDetailsFromDB(userID)
         userRepository.user.observe(viewLifecycleOwner, Observer {
             if (it != null) {
-                Log.d(TAG.toString(), "getUserDetailsFromDB: $it")
                 val imageView = binding.ivProfilePic
                 if (it.profilePic != "") {
                     Picasso.with(context).load(it.profilePic).into(imageView)

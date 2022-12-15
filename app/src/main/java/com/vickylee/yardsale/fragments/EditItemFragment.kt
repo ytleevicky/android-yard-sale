@@ -13,6 +13,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -70,42 +72,24 @@ class EditItemFragment : Fragment() {
         var userID = prefs.getString("USER_DOC_ID", "NA")
         var itemID = prefs.getString("ITEM_ID", "NA")
         var sellerID = prefs.getString("SELLER_ID", "NA")
-        Log.d(TAG.toString(), "onViewCreated: $userID")
+
         if (userID != null) {
-            if (sellerID != null) {
-                if (itemID != null) {
-                    userRepository.getItemDetails(userID, itemID)
-                    userRepository.item.observe(viewLifecycleOwner, Observer {
-                        if (it != null) {
-                            binding.edtItemName.setText(it.itemName)
-                            binding.edtItemDescription.setText(it.itemDescription)
-                            binding.edtItemPrice.setText(it.itemPrice.toString())
-                            val imageView = binding.ivItemPic
-                            imageUrl = it.itemPic
-                            Picasso.with(context).load(imageUrl).into(imageView)
-
-                        }
-
-                    })
-                }
-            }
-
-
-            binding.btnSaveItem.setOnClickListener {
-                val itemName = binding.edtItemName.text.toString()
-                val itemDescription = binding.edtItemDescription.text.toString()
-                val itemPrice = binding.edtItemPrice.text.toString().toDouble()
-                if (validateUserInputData()) {
-                    if (itemID != null) {
-                        updateData(userID, itemID, itemName, itemDescription, itemPrice)
+            if (itemID != null) {
+                userRepository.getItemDetails(userID, itemID)
+                userRepository.item.observe(viewLifecycleOwner, Observer {
+                    if (it != null) {
+                        binding.edtItemName.setText(it.itemName)
+                        binding.edtItemDescription.setText(it.itemDescription)
+                        binding.edtItemPrice.setText(it.itemPrice.toString())
+                        val imageView = binding.ivItemPic
+                        imageUrl = it.itemPic
+                        Picasso.with(context).load(imageUrl).into(imageView)
                     }
-
-                    val action = EditItemFragmentDirections.actionEditItemFragmentToListViewFragment()
-                    findNavController().navigate(action)
-                }
+                })
             }
         }
 
+        // Choose image from gallery
         binding.imgBtnPhotoGallery.setOnClickListener {
             if (hasExternalStoragePermission()) {
                 selectPhoto()
@@ -116,6 +100,23 @@ class EditItemFragment : Fragment() {
                     REQUIRED_PERMISSIONS_LIST,
                     REQUEST_PERMISSION_CODE
                 )
+            }
+        }
+
+        // Save item to DB after validation
+        binding.btnSaveItem.setOnClickListener {
+            val itemName = binding.edtItemName.text.toString()
+            val itemDescription = binding.edtItemDescription.text.toString()
+            val itemPrice = binding.edtItemPrice.text.toString().toDouble()
+            if (validateUserInputData()) {
+                if (itemID != null) {
+                    if (userID != null) {
+                        validateImage(userID, itemID, itemName, itemDescription, itemPrice)
+                    }
+                }
+
+                val action = EditItemFragmentDirections.actionEditItemFragmentToListViewFragment()
+                findNavController().navigate(action)
             }
         }
     }
@@ -154,10 +155,10 @@ class EditItemFragment : Fragment() {
         return validateDataResult
     }
 
-    private fun updateData(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double) {
+    // Validate image
+    private fun validateImage(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double) {
         if (userID != null) {
 
-            Log.d("TAG", "onViewCreated: Starting")
             if (itemID != null) {
                 if (imageUri != null) {
                     storeItemImage(userID, itemID, itemName, itemDescription, itemPrice, imageUri!!)
@@ -170,6 +171,7 @@ class EditItemFragment : Fragment() {
         }
     }
 
+    // Store image to firebase store
     private fun storeItemImage(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double, imageUri: Uri) {
         storageRef = FirebaseStorage.getInstance().reference.child("Images")
         firebaseFirestore = FirebaseFirestore.getInstance()
@@ -186,6 +188,7 @@ class EditItemFragment : Fragment() {
         }
     }
 
+    // Ask for user's permission to use gallery
     private fun hasExternalStoragePermission(): Boolean {
         // returns true of the External storage permission is granted, and false otherwise
         return ContextCompat.checkSelfPermission(
