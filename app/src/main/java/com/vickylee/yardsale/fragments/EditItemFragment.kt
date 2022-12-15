@@ -7,11 +7,13 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -23,9 +25,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
+import com.vickylee.yardsale.LoadingDialog
 import com.vickylee.yardsale.R
 import com.vickylee.yardsale.data.UserRepository
 import com.vickylee.yardsale.databinding.FragmentEditItemBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 
 class EditItemFragment : Fragment() {
     //region Properties
@@ -58,7 +64,8 @@ class EditItemFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        prefs = requireContext().getSharedPreferences("YARD_SALE_PREFS",
+        prefs = requireContext().getSharedPreferences(
+            "YARD_SALE_PREFS",
             AppCompatActivity.MODE_PRIVATE
         )
         // setup view binding
@@ -93,8 +100,7 @@ class EditItemFragment : Fragment() {
         binding.imgBtnPhotoGallery.setOnClickListener {
             if (hasExternalStoragePermission()) {
                 selectPhoto()
-            }
-            else {
+            } else {
                 // TODO: Otherwise, request permissions
                 requestPermissions(
                     REQUIRED_PERMISSIONS_LIST,
@@ -109,14 +115,22 @@ class EditItemFragment : Fragment() {
             val itemDescription = binding.edtItemDescription.text.toString()
             val itemPrice = binding.edtItemPrice.text.toString().toDouble()
             if (validateUserInputData()) {
+                displayLoadingDialog(1500)
                 if (itemID != null) {
                     if (userID != null) {
                         validateImage(userID, itemID, itemName, itemDescription, itemPrice)
                     }
                 }
 
+                GlobalScope.async {
+                    delay(1500)
+                }
+
                 val action = EditItemFragmentDirections.actionEditItemFragmentToListViewFragment()
                 findNavController().navigate(action)
+
+                Toast.makeText(context, "Item has been updated successfully", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -156,15 +170,27 @@ class EditItemFragment : Fragment() {
     }
 
     // Validate image
-    private fun validateImage(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double) {
+    private fun validateImage(
+        userID: String,
+        itemID: String,
+        itemName: String,
+        itemDescription: String,
+        itemPrice: Double
+    ) {
         if (userID != null) {
 
             if (itemID != null) {
                 if (imageUri != null) {
                     storeItemImage(userID, itemID, itemName, itemDescription, itemPrice, imageUri!!)
-                }
-                else {
-                    userRepository.updateItem(userID, itemID, itemName, itemDescription, itemPrice, imageUrl)
+                } else {
+                    userRepository.updateItem(
+                        userID,
+                        itemID,
+                        itemName,
+                        itemDescription,
+                        itemPrice,
+                        imageUrl
+                    )
                 }
 
             }
@@ -172,7 +198,14 @@ class EditItemFragment : Fragment() {
     }
 
     // Store image to firebase store
-    private fun storeItemImage(userID: String, itemID: String, itemName: String, itemDescription: String, itemPrice: Double, imageUri: Uri) {
+    private fun storeItemImage(
+        userID: String,
+        itemID: String,
+        itemName: String,
+        itemDescription: String,
+        itemPrice: Double,
+        imageUri: Uri
+    ) {
         storageRef = FirebaseStorage.getInstance().reference.child("Images")
         firebaseFirestore = FirebaseFirestore.getInstance()
         storageRef = storageRef.child(System.currentTimeMillis().toString())
@@ -180,7 +213,14 @@ class EditItemFragment : Fragment() {
             storageRef.putFile(imageUri).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     storageRef.downloadUrl.addOnSuccessListener { uri ->
-                        userRepository.updateItem(userID, itemID, itemName, itemDescription, itemPrice, uri.toString())
+                        userRepository.updateItem(
+                            userID,
+                            itemID,
+                            itemName,
+                            itemDescription,
+                            itemPrice,
+                            uri.toString()
+                        )
                     }
                 }
 
@@ -210,10 +250,20 @@ class EditItemFragment : Fragment() {
             imageUri = data.data
             Log.d("TAG", "onActivityResult: imageUri: $imageUri")
             binding.ivItemPic.setImageURI(imageUri)
-        }
-        else {
+        } else {
             imageUri = null
         }
 
+    }
+
+    fun displayLoadingDialog(duration: Long) {
+        val loading = LoadingDialog(requireActivity())
+        loading.startLoading("Updating Item")
+        val handler = Handler()
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                loading.isDimiss()
+            }
+        }, duration)
     }
 }
