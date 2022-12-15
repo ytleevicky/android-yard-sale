@@ -70,6 +70,7 @@ class UserRepository(private val context: Context) {
             db.collection(COLLECTION_NAME).add(data).addOnSuccessListener { docRef ->
                 Log.d(TAG, "addUserToDB: Document added with ID ${docRef.id}")
                 editor.putString("USER_DOC_ID", docRef.id)
+                editor.putStringSet("USER_FAV_ITEMS", mutableSetOf())
                 editor.commit()
 
             }.addOnFailureListener {
@@ -117,6 +118,7 @@ class UserRepository(private val context: Context) {
                                 "searchUserWithEmail: User found: ${documentChange.document.id}",
                             )
 
+                            // fav item list
                             val fav =
                                 documentChange.document.data.get(FIELD_USER_FAV_ITEMS) as ArrayList<String>?
                             editor.putStringSet("USER_FAV_ITEMS", fav?.toMutableSet())
@@ -534,11 +536,15 @@ class UserRepository(private val context: Context) {
     fun addItemToFavorites(itemID: String) {
         try {
             val userDocumentID = sharedPreference.getString("USER_DOC_ID", "")!!
+            val userEmail = sharedPreference.getString("USER_EMAIL", "")!!
 
             db.collection(COLLECTION_NAME).document(userDocumentID)
                 .update(FIELD_USER_FAV_ITEMS, FieldValue.arrayUnion(itemID))
                 .addOnSuccessListener {
                     Log.d(TAG, "addItemToFavorites: Updated successfully")
+
+                    // to retrieve the latest fav list
+                    searchUserWithEmail(userEmail)
                 }
                 .addOnFailureListener {
                     Log.e(TAG, "addItemToFavorites: Update Failed")

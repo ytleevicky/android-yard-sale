@@ -103,6 +103,8 @@ class AddFavoriteFragment : Fragment(R.layout.fragment_add_favorite), OnItemClic
     //endregion
 
     override fun onItemClicked(item: Item, position: Int) {
+        prefs.edit().putString("ITEM_ID", item.itemID).apply()
+        prefs.edit().putString("SELLER_ID", item.sellerID).apply()
         val action = AddFavoriteFragmentDirections.actionAddFavoriteFragmentToItemDetailsFragment()
         findNavController().navigate(action)
     }
