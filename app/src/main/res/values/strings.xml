@@ -5,6 +5,7 @@
     <string name="fragment_profile">Profile</string>
     <string name="fragment_fav_list">Favorite</string>
     <string name="fragment_item_details">Item Details</string>
+    <string name="fragment_edit_item_details">Edit Item Details</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
