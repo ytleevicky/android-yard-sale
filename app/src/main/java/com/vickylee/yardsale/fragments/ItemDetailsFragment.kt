@@ -176,6 +176,7 @@ class ItemDetailsFragment : Fragment() {
                         findNavController().navigate(action)
                     }
 
+                    // Delete Item
                     binding.fabDeleteItem.setOnClickListener {
                         //ask for confirmation
                         val confirmDialog = AlertDialog.Builder(requireContext())
