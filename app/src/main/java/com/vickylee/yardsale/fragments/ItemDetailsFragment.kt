@@ -100,9 +100,12 @@ class ItemDetailsFragment : Fragment() {
                             val intent = Intent(Intent.ACTION_DIAL, phoneNumAsUri)
                             if (intent.resolveActivity(requireActivity().packageManager) != null) {
                                 startActivity(intent)
-                            }
-                            else {
-                                Toast.makeText(context, "Couldn't call this number", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Couldn't call this number",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                         confirmDialog.show()
@@ -114,7 +117,8 @@ class ItemDetailsFragment : Fragment() {
                     if (itemID != null) {
                         userRepository.addItemToFavorites(itemID)
                     }
-                    Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Added to favorite.", Toast.LENGTH_SHORT)
+                        .show()
                 }
 
                 // Remove from favorite for buyer
@@ -188,12 +192,18 @@ class ItemDetailsFragment : Fragment() {
                             val action =
                                 ItemDetailsFragmentDirections.actionItemDetailsFragmentToListViewFragment()
                             findNavController().navigate(action)
+
+                            Toast.makeText(
+                                requireContext(),
+                                "Item removed successfully.",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
                         }
                         confirmDialog.show()
 
                     }
-                }
-                else {
+                } else {
                     val userFavItemList = prefs.getStringSet("USER_FAV_ITEMS", null)
 
                     // user currently has no favorite items
@@ -201,8 +211,7 @@ class ItemDetailsFragment : Fragment() {
                         binding.btnAddFav.visibility = View.VISIBLE
                         binding.btnRemoveFav.visibility = View.GONE
 
-                    }
-                    else if (userFavItemList!!.size > 0) {
+                    } else if (userFavItemList!!.size > 0) {
                         if (userFavItemList.contains(itemID)) {
                             binding.btnAddFav.visibility = View.GONE
                             binding.btnRemoveFav.visibility = View.VISIBLE
