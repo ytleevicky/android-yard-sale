@@ -1,5 +1,7 @@
 # Yard Sale (Android)
 
+<img src="screenshot/picture1.png">
+
 This is an Android application written in Kotlin. Seller will be able to post item that seller wants to sell, and buyer will be able to view all the items those are up for sale.
 
 Project Features:
